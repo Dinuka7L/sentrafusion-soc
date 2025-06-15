@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -82,6 +83,9 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex items-center space-x-6">
+          <Link to="/chat" className="text-gray-300 hover:text-white transition-colors font-semibold">
+            Ask AI
+          </Link>
           <Link to="/workspaces" className="text-gray-300 hover:text-white transition-colors">
             Workspaces
           </Link>
