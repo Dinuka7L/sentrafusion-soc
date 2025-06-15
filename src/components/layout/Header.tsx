@@ -1,12 +1,18 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Shield, Settings, LogOut, User } from 'lucide-react';
-// Import the hardcoded logo
-import logoImg from '@/assets/logo.png';
+
+// Use a try-catch so missing logo.png does not break the build
+let logoImg: string = "https://placehold.co/64x64/png?text=Logo";
+try {
+  // @ts-ignore
+  logoImg = require('@/assets/logo.png');
+} catch (e) {
+  logoImg = "https://placehold.co/64x64/png?text=Logo";
+}
 
 const defaultLogoSize = 48;
 const minLogoSize = 32;

@@ -1,11 +1,17 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Layout from "@/components/layout/Layout";
 import { useTheme } from "@/hooks/useTheme";
-// Import the hardcoded logo
-import logoImg from '@/assets/logo.png';
+// Use a try-catch so missing logo.png does not break the build
+let logoImg: string = "https://placehold.co/64x64/png?text=Logo";
+try {
+  // @ts-ignore
+  logoImg = require('@/assets/logo.png');
+} catch (e) {
+  // fallback to web placeholder
+  logoImg = "https://placehold.co/64x64/png?text=Logo";
+}
 
 const SETTINGS_THEME_KEY = "soc-theme";
 
@@ -85,7 +91,12 @@ const Settings = () => {
                 }}
                 className="object-contain bg-cyber-gunmetal border p-1 rounded"
               />
-              <span className="text-gray-400 text-sm italic">Logo is fixed. To update, replace the logo file in <code className="px-1">src/assets/logo.png</code></span>
+              <span className="text-gray-400 text-sm italic">
+                {logoImg.startsWith("http")
+                  ? "No logo file found. To add your logo, place a logo.png in src/assets/logo.png"
+                  : <>Logo is fixed. To update, replace the logo file in <code className="px-1">src/assets/logo.png</code></>
+                }
+              </span>
             </div>
           </CardContent>
         </Card>
