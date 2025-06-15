@@ -50,7 +50,6 @@ const Settings = () => {
   const [selectedTheme, setSelectedTheme] = useState<string>(theme);
   const [pendingTheme, setPendingTheme] = useState(false);
   const [logoSize, setLogoSize] = useState<number>(defaultLogoSize);
-  const [logoSizeChanged, setLogoSizeChanged] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,16 +62,15 @@ const Settings = () => {
     if (storedSize) setLogoSize(Number(storedSize));
   }, []);
 
-  // Track pending theme change
+  // Theme update logic for global application
+  useEffect(() => {
+    document.body.classList.remove("theme-red-eagle", "theme-midnight-blue", "theme-purple-hues");
+    document.body.classList.add("theme-" + selectedTheme);
+  }, [selectedTheme]);
+
   useEffect(() => {
     setPendingTheme(selectedTheme !== theme);
   }, [selectedTheme, theme]);
-
-  // Track pending logo size change
-  useEffect(() => {
-    const storedSize = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
-    setLogoSizeChanged(Number(storedSize) !== logoSize);
-  }, [logoSize]);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,13 +96,12 @@ const Settings = () => {
     localStorage.setItem(SETTINGS_THEME_KEY, selectedTheme);
   };
 
+  // IMMEDIATE LOGO SIZE CHANGE and sync to localStorage
   const handleLogoSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLogoSize(Number(e.target.value));
-  };
-
-  const handleLogoSizeSave = () => {
-    localStorage.setItem(SETTINGS_LOGO_SIZE_KEY, String(logoSize));
-    setLogoSizeChanged(false);
+    const newSize = Number(e.target.value);
+    setLogoSize(newSize);
+    localStorage.setItem(SETTINGS_LOGO_SIZE_KEY, String(newSize));
+    // This triggers the event listened for in Header, so Header logo updates live.
   };
 
   return (
@@ -165,9 +162,7 @@ const Settings = () => {
                 className="w-40 accent-cyber-red"
               />
               <span className="ml-2 font-mono text-gray-300">{logoSize}px</span>
-              <Button className="ml-2" size="sm" variant={logoSizeChanged ? "default" : "outline"} onClick={handleLogoSizeSave} disabled={!logoSizeChanged}>
-                Save
-              </Button>
+              {/* Remove Save button, update on input change */}
             </div>
           </CardContent>
         </Card>
