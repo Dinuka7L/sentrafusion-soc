@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import AlertCard from '@/components/alerts/AlertCard';
@@ -294,7 +293,7 @@ const Alerts = () => {
         </Card>
 
         {/* Incidents List */}
-        <div className="space-y-4">
+        <div className="h-[60vh] overflow-y-auto pr-1 space-y-4 custom-scrollbar">
           {filteredIncidents.length > 0 ? (
             filteredIncidents.map((incident) => (
               <Card key={incident.id} className="bg-cyber-darker border-cyber-gunmetal hover:border-cyber-red transition-all duration-200">

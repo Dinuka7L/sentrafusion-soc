@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Shield, Settings, LogOut, User } from 'lucide-react';
 
+const SETTINGS_LOGO_KEY = "soc-custom-logo";
+
 const Header = () => {
   const navigate = useNavigate();
 
@@ -14,11 +16,21 @@ const Header = () => {
   const userRole = "SOC Analyst";
   const avatarInitials = "GU";
 
+  // Load custom logo from localStorage
+  let logoUrl: string | null = null;
+  if (typeof window !== "undefined") {
+    logoUrl = localStorage.getItem(SETTINGS_LOGO_KEY);
+  }
+
   return (
     <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-          <Shield className="h-8 w-8 text-cyber-red" />
+          {logoUrl ? (
+            <img src={logoUrl} alt="Custom Logo" className="h-8 w-8 rounded object-contain bg-cyber-gunmetal border p-1" />
+          ) : (
+            <Shield className="h-8 w-8 text-cyber-red" />
+          )}
           <div className="flex flex-col">
             <span className="text-xl font-bold text-white">SOC-Suite</span>
             <span className="text-xs text-cyber-red">Threat Intelligence Platform</span>
