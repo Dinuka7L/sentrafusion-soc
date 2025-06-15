@@ -326,13 +326,6 @@ const Alerts = () => {
                   
                   <p className="text-gray-300 text-sm mb-4">{incident.description}</p>
                   
-                  {incident.assignee && (
-                    <div className="flex items-center text-sm text-gray-400 mb-4">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
-                      Assigned to: <span className="text-white ml-1">{incident.assignee.name}</span>
-                    </div>
-                  )}
-
                   {incident.iocs && incident.iocs.length > 0 && (
                     <div className="space-y-2 mb-4">
                       <h4 className="text-sm font-medium text-gray-300">IOCs:</h4>
@@ -351,6 +344,23 @@ const Alerts = () => {
                     </div>
                   )}
 
+                  {/* Escalation info */}
+                  <div className="flex items-center text-sm text-gray-400 mb-4">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    {incident.assignee 
+                      ? (
+                        <>
+                          Escalated by:
+                          <span className="text-white ml-1">{incident.assignee.name}</span>
+                        </>
+                      )
+                      : (
+                        <span>Not escalated</span>
+                      )
+                    }
+                  </div>
+
+                  {/* Actions */}
                   <div className="flex space-x-2">
                     <Button 
                       size="sm" 
@@ -360,16 +370,6 @@ const Alerts = () => {
                       <AlertTriangle className="h-4 w-4 mr-2" />
                       Investigate
                     </Button>
-                    {!incident.assignee && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => console.log('Assigning', incident.id)}
-                        className="border-cyber-gunmetal text-gray-300 hover:bg-cyber-gunmetal"
-                      >
-                        Assign to Me
-                      </Button>
-                    )}
                   </div>
                 </CardContent>
               </Card>
