@@ -8,6 +8,13 @@ import { Shield, Settings, LogOut, User } from 'lucide-react';
 
 const Header = () => {
   const navigate = useNavigate();
+  
+  // Mock user data - in a real app this would come from authentication context
+  const currentUser = {
+    name: 'John Analyst',
+    email: 'j.analyst@company.com',
+    initials: 'JA'
+  };
 
   return (
     <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
@@ -24,8 +31,8 @@ const Header = () => {
           <Link to="/workspaces" className="text-gray-300 hover:text-white transition-colors">
             Workspaces
           </Link>
-          <Link to="/alerts" className="text-gray-300 hover:text-white transition-colors">
-            Alerts
+          <Link to="/incidents" className="text-gray-300 hover:text-white transition-colors">
+            Incidents
           </Link>
           <Link to="/knowledge" className="text-gray-300 hover:text-white transition-colors">
             Knowledge
@@ -36,10 +43,10 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm" className="border-cyber-red text-cyber-red hover:bg-cyber-red hover:text-white">
-            <Shield className="h-4 w-4 mr-2" />
-            Emergency
-          </Button>
+          <div className="text-right text-sm">
+            <p className="text-white font-medium">{currentUser.name}</p>
+            <p className="text-gray-400 text-xs">{currentUser.email}</p>
+          </div>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -47,7 +54,7 @@ const Header = () => {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="/placeholder.svg" alt="User" />
                   <AvatarFallback className="bg-cyber-gunmetal text-white">
-                    <User className="h-5 w-5" />
+                    {currentUser.initials}
                   </AvatarFallback>
                 </Avatar>
               </Button>

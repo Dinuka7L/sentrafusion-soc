@@ -44,6 +44,11 @@
 
   body {
     @apply bg-cyber-dark text-foreground font-mono;
+    min-height: 100vh;
+  }
+
+  /* Apply matrix background to the entire app */
+  #root {
     background-image: 
       /* Red dot matrix pattern */
       radial-gradient(circle at 0% 0%, rgba(198, 40, 40, 0.3) 1px, transparent 1px),
@@ -68,6 +73,7 @@
       0 0,
       0 0,
       0 0;
+    background-attachment: fixed;
     min-height: 100vh;
   }
 

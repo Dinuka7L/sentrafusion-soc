@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import AlertCard from '@/components/alerts/AlertCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,100 +12,153 @@ import { Search, Filter, RefreshCw, AlertTriangle, Clock } from 'lucide-react';
 
 const Alerts = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [severityFilter, setSeverityFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [timeFilter, setTimeFilter] = useState('12'); // hours
 
-  // Mock alerts data
-  const alerts: Alert[] = [
+  // Enhanced mock incidents data with priority levels 1-4
+  const incidents: (Alert & { priority: number })[] = [
     {
       id: '1',
-      title: 'Suspicious PowerShell Activity Detected',
-      description: 'Encoded PowerShell command executed on DESKTOP-ABC123 with potential malicious intent. The command appears to be base64 encoded and attempts to download additional payloads.',
+      title: 'Critical System Breach - Active APT Campaign',
+      description: 'Advanced persistent threat detected with active data exfiltration. Multiple compromised endpoints with C2 communications established.',
       severity: 'critical',
-      source: 'Windows Defender ATP',
-      timestamp: new Date(),
+      priority: 1,
+      source: 'SIEM Correlation Engine',
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
       status: 'open',
       iocs: [
-        { id: '1', type: 'hash', value: 'a1b2c3d4e5f6789abcdef', confidence: 95, tags: ['malware', 'powershell'], firstSeen: new Date(), lastSeen: new Date() },
+        { id: '1', type: 'hash', value: 'a1b2c3d4e5f6789abcdef', confidence: 95, tags: ['malware', 'apt'], firstSeen: new Date(), lastSeen: new Date() },
         { id: '2', type: 'ip', value: '192.168.100.50', confidence: 87, tags: ['c2'], firstSeen: new Date(), lastSeen: new Date() }
       ]
     },
     {
       id: '2',
-      title: 'Multiple Failed Login Attempts',
-      description: 'Brute force attack detected from IP 192.168.1.100 targeting user accounts admin, administrator, and service accounts.',
-      severity: 'high',
-      source: 'Active Directory',
-      timestamp: new Date(Date.now() - 300000),
+      title: 'Ransomware Activity Detected',
+      description: 'Suspicious encryption activity and ransom note deployment detected on multiple workstations in Finance department.',
+      severity: 'critical',
+      priority: 1,
+      source: 'Endpoint Protection',
+      timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
       status: 'investigating',
       assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' },
       iocs: [
-        { id: '3', type: 'ip', value: '192.168.1.100', confidence: 92, tags: ['bruteforce'], firstSeen: new Date(), lastSeen: new Date() }
+        { id: '3', type: 'hash', value: 'f1e2d3c4b5a6789fedcba', confidence: 98, tags: ['ransomware'], firstSeen: new Date(), lastSeen: new Date() }
       ]
     },
     {
       id: '3',
-      title: 'Unusual Network Traffic Pattern',
-      description: 'Data exfiltration pattern detected on network segment 10.0.1.0/24 with large amounts of data being transmitted to external hosts.',
-      severity: 'medium',
-      source: 'Network IDS',
-      timestamp: new Date(Date.now() - 600000),
+      title: 'Privilege Escalation Attempt',
+      description: 'User account attempted to escalate privileges using known vulnerability CVE-2021-1234.',
+      severity: 'high',
+      priority: 2,
+      source: 'Endpoint Detection',
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       status: 'open',
-      iocs: [
-        { id: '4', type: 'domain', value: 'suspicious-site.com', confidence: 78, tags: ['exfiltration'], firstSeen: new Date(), lastSeen: new Date() }
-      ]
+      assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
     },
     {
       id: '4',
+      title: 'Suspicious Network Scanning',
+      description: 'Internal host performing comprehensive network reconnaissance across multiple subnets.',
+      severity: 'high',
+      priority: 2,
+      source: 'Network IDS',
+      timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+      status: 'investigating',
+      iocs: [
+        { id: '4', type: 'ip', value: '10.0.50.25', confidence: 85, tags: ['scanning'], firstSeen: new Date(), lastSeen: new Date() }
+      ]
+    },
+    {
+      id: '5',
       title: 'Malware Signature Match',
       description: 'Known malware signature detected in email attachment. The file appears to be a variant of the TrickBot banking trojan.',
-      severity: 'high',
+      severity: 'medium',
+      priority: 3,
       source: 'Email Security Gateway',
-      timestamp: new Date(Date.now() - 900000),
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
       status: 'resolved',
       assignee: { id: '3', email: 'senior@company.com', name: 'Jane Senior', role: 'tier2' }
     },
     {
-      id: '5',
-      title: 'Privilege Escalation Attempt',
-      description: 'User account attempted to escalate privileges using known vulnerability CVE-2021-1234.',
-      severity: 'critical',
-      source: 'Endpoint Detection',
-      timestamp: new Date(Date.now() - 1200000),
-      status: 'false-positive',
-      assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
+      id: '6',
+      title: 'Multiple Failed Login Attempts',
+      description: 'Brute force attack detected from external IP targeting admin accounts.',
+      severity: 'medium',
+      priority: 3,
+      source: 'Active Directory',
+      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
+      status: 'open',
+      iocs: [
+        { id: '5', type: 'ip', value: '203.0.113.42', confidence: 92, tags: ['bruteforce'], firstSeen: new Date(), lastSeen: new Date() }
+      ]
     },
     {
-      id: '6',
+      id: '7',
       title: 'Anomalous DNS Queries',
-      description: 'Multiple DNS queries to newly registered domains with suspicious patterns detected from workstation WS-FINANCE-01.',
+      description: 'Multiple DNS queries to newly registered domains with suspicious patterns detected.',
       severity: 'low',
+      priority: 4,
       source: 'DNS Security',
-      timestamp: new Date(Date.now() - 1800000),
+      timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 hours ago
       status: 'open'
+    },
+    {
+      id: '8',
+      title: 'Unusual Process Execution',
+      description: 'PowerShell execution with encoded commands detected on user workstation.',
+      severity: 'low',
+      priority: 4,
+      source: 'Windows Defender ATP',
+      timestamp: new Date(Date.now() - 11 * 60 * 60 * 1000), // 11 hours ago
+      status: 'false-positive',
+      assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
     }
   ];
 
-  const filteredAlerts = alerts.filter(alert => {
-    const matchesSearch = alert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         alert.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         alert.source.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSeverity = severityFilter === 'all' || alert.severity === severityFilter;
-    const matchesStatus = statusFilter === 'all' || alert.status === statusFilter;
-    
-    return matchesSearch && matchesSeverity && matchesStatus;
-  });
+  const filteredIncidents = useMemo(() => {
+    const now = new Date();
+    const timeThreshold = new Date(now.getTime() - parseInt(timeFilter) * 60 * 60 * 1000);
 
-  const getAlertCounts = () => {
-    const total = alerts.length;
-    const critical = alerts.filter(a => a.severity === 'critical').length;
-    const high = alerts.filter(a => a.severity === 'high').length;
-    const open = alerts.filter(a => a.status === 'open').length;
+    return incidents.filter(incident => {
+      const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           incident.source.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPriority = priorityFilter === 'all' || incident.priority.toString() === priorityFilter;
+      const matchesStatus = statusFilter === 'all' || incident.status === statusFilter;
+      const matchesTime = incident.timestamp >= timeThreshold;
+      
+      return matchesSearch && matchesPriority && matchesStatus && matchesTime;
+    }).sort((a, b) => {
+      // Sort by priority (1 highest, 4 lowest), then by timestamp (newest first)
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority;
+      }
+      return b.timestamp.getTime() - a.timestamp.getTime();
+    });
+  }, [incidents, searchTerm, priorityFilter, statusFilter, timeFilter]);
+
+  const getIncidentCounts = () => {
+    const total = filteredIncidents.length;
+    const priority1 = filteredIncidents.filter(i => i.priority === 1).length;
+    const priority2 = filteredIncidents.filter(i => i.priority === 2).length;
+    const open = filteredIncidents.filter(i => i.status === 'open').length;
     
-    return { total, critical, high, open };
+    return { total, priority1, priority2, open };
   };
 
-  const counts = getAlertCounts();
+  const counts = getIncidentCounts();
+
+  const getPriorityColor = (priority: number) => {
+    switch (priority) {
+      case 1: return 'bg-red-600 text-white';
+      case 2: return 'bg-orange-600 text-white';
+      case 3: return 'bg-yellow-600 text-white';
+      case 4: return 'bg-green-600 text-white';
+      default: return 'bg-gray-600 text-white';
+    }
+  };
 
   return (
     <Layout>
@@ -113,8 +166,8 @@ const Alerts = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">Security Alerts</h1>
-            <p className="text-gray-400 mt-1">Monitor and investigate security incidents</p>
+            <h1 className="text-3xl font-bold text-white">Security Incidents</h1>
+            <p className="text-gray-400 mt-1">Monitor and investigate security incidents by priority</p>
           </div>
           <div className="flex space-x-2">
             <Button className="bg-cyber-red hover:bg-cyber-red-dark text-white">
@@ -130,7 +183,7 @@ const Alerts = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Total Alerts</p>
+                  <p className="text-sm text-gray-400">Total Incidents</p>
                   <p className="text-2xl font-bold text-white">{counts.total}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-gray-400" />
@@ -142,8 +195,8 @@ const Alerts = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">Critical</p>
-                  <p className="text-2xl font-bold text-red-500">{counts.critical}</p>
+                  <p className="text-sm text-gray-400">Priority 1</p>
+                  <p className="text-2xl font-bold text-red-500">{counts.priority1}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-500" />
               </div>
@@ -154,8 +207,8 @@ const Alerts = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-400">High Priority</p>
-                  <p className="text-2xl font-bold text-orange-500">{counts.high}</p>
+                  <p className="text-sm text-gray-400">Priority 2</p>
+                  <p className="text-2xl font-bold text-orange-500">{counts.priority2}</p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-orange-500" />
               </div>
@@ -189,7 +242,7 @@ const Alerts = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search alerts..."
+                    placeholder="Search incidents..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-cyber-darker border-cyber-gunmetal text-white"
@@ -197,17 +250,16 @@ const Alerts = () => {
                 </div>
               </div>
               
-              <Select value={severityFilter} onValueChange={setSeverityFilter}>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                 <SelectTrigger className="w-[180px] bg-cyber-darker border-cyber-gunmetal text-white">
-                  <SelectValue placeholder="Severity" />
+                  <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent className="bg-cyber-darker border-cyber-gunmetal">
-                  <SelectItem value="all">All Severities</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="info">Info</SelectItem>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="1">Priority 1 (Critical)</SelectItem>
+                  <SelectItem value="2">Priority 2 (High)</SelectItem>
+                  <SelectItem value="3">Priority 3 (Medium)</SelectItem>
+                  <SelectItem value="4">Priority 4 (Low)</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -223,32 +275,118 @@ const Alerts = () => {
                   <SelectItem value="false-positive">False Positive</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Select value={timeFilter} onValueChange={setTimeFilter}>
+                <SelectTrigger className="w-[180px] bg-cyber-darker border-cyber-gunmetal text-white">
+                  <SelectValue placeholder="Time Range" />
+                </SelectTrigger>
+                <SelectContent className="bg-cyber-darker border-cyber-gunmetal">
+                  <SelectItem value="1">Last 1 hour</SelectItem>
+                  <SelectItem value="6">Last 6 hours</SelectItem>
+                  <SelectItem value="12">Last 12 hours</SelectItem>
+                  <SelectItem value="24">Last 24 hours</SelectItem>
+                  <SelectItem value="72">Last 3 days</SelectItem>
+                  <SelectItem value="168">Last 7 days</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Alerts List */}
+        {/* Incidents List */}
         <div className="space-y-4">
-          {filteredAlerts.length > 0 ? (
-            filteredAlerts.map((alert) => (
-              <AlertCard
-                key={alert.id}
-                alert={alert}
-                onInvestigate={(alert) => console.log('Investigating', alert.id)}
-                onAssign={(alert) => console.log('Assigning', alert.id)}
-              />
+          {filteredIncidents.length > 0 ? (
+            filteredIncidents.map((incident) => (
+              <Card key={incident.id} className="bg-cyber-darker border-cyber-gunmetal hover:border-cyber-red transition-all duration-200">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Badge className={getPriorityColor(incident.priority)}>
+                          Priority {incident.priority}
+                        </Badge>
+                        <Badge className={
+                          incident.status === 'open' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                          incident.status === 'investigating' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+                          incident.status === 'resolved' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                          'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                        } variant="outline">
+                          {incident.status.replace('-', ' ').toUpperCase()}
+                        </Badge>
+                      </div>
+                      <h3 className="text-lg font-semibold text-white">{incident.title}</h3>
+                    </div>
+                    <div className="flex flex-col items-end text-xs text-gray-400">
+                      <span className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {incident.timestamp.toLocaleTimeString()}
+                      </span>
+                      <span className="mt-1">{incident.source}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-300 text-sm mb-4">{incident.description}</p>
+                  
+                  {incident.assignee && (
+                    <div className="flex items-center text-sm text-gray-400 mb-4">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Assigned to: <span className="text-white ml-1">{incident.assignee.name}</span>
+                    </div>
+                  )}
+
+                  {incident.iocs && incident.iocs.length > 0 && (
+                    <div className="space-y-2 mb-4">
+                      <h4 className="text-sm font-medium text-gray-300">IOCs:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {incident.iocs.slice(0, 3).map(ioc => (
+                          <Badge key={ioc.id} variant="outline" className="text-xs">
+                            {ioc.type}: {ioc.value.substring(0, 20)}...
+                          </Badge>
+                        ))}
+                        {incident.iocs.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{incident.iocs.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex space-x-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => console.log('Investigating', incident.id)}
+                      className="bg-cyber-red hover:bg-cyber-red-dark text-white"
+                    >
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Investigate
+                    </Button>
+                    {!incident.assignee && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => console.log('Assigning', incident.id)}
+                        className="border-cyber-gunmetal text-gray-300 hover:bg-cyber-gunmetal"
+                      >
+                        Assign to Me
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))
           ) : (
             <Card className="bg-cyber-darker border-cyber-gunmetal">
               <CardContent className="p-8 text-center">
                 <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-400 text-lg">No alerts match your current filters</p>
+                <p className="text-gray-400 text-lg">No incidents match your current filters</p>
                 <Button
                   variant="outline"
                   onClick={() => {
                     setSearchTerm('');
-                    setSeverityFilter('all');
+                    setPriorityFilter('all');
                     setStatusFilter('all');
+                    setTimeFilter('12');
                   }}
                   className="mt-4 border-cyber-gunmetal text-gray-300 hover:bg-cyber-gunmetal"
                 >

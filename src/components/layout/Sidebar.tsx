@@ -24,9 +24,9 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/' },
-    { icon: MessageSquare, label: 'Chat', href: '/chat' },
-    { icon: AlertTriangle, label: 'Alerts', href: '/alerts' },
-    { icon: Shield, label: 'Incidents', href: '/incidents' },
+    { icon: MessageSquare, label: 'Ask AI', href: '/chat' },
+    { icon: AlertTriangle, label: 'Incidents', href: '/alerts' },
+    { icon: Shield, label: 'Cases', href: '/incidents' },
     { icon: FileText, label: 'Knowledge', href: '/knowledge' },
     { icon: Database, label: 'Connectors', href: '/connectors' },
     { icon: Clock, label: 'Shift Summary', href: '/shift-summary' },
