@@ -42,7 +42,7 @@ const Header = () => {
           )}
           <div className="flex flex-col">
             <span className="text-xl font-bold text-white">SOC-Suite</span>
-            <span className="text-xs text-cyber-red">Threat Intelligence Platform</span>
+            <span className="text-xs text-cyber-red">SOC Management Platform</span>
           </div>
         </Link>
 
