@@ -12,6 +12,21 @@ const defaultLogoSize = 48;
 const minLogoSize = 32;
 const maxLogoSize = 120;
 
+// Get initial logoUrl and logoSize from localStorage before first render
+function getInitialLogoUrl() {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem(SETTINGS_LOGO_KEY);
+  }
+  return null;
+}
+function getInitialLogoSize() {
+  if (typeof window !== "undefined") {
+    const sizeStr = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
+    return sizeStr ? Number(sizeStr) : defaultLogoSize;
+  }
+  return defaultLogoSize;
+}
+
 const Header = () => {
   const navigate = useNavigate();
 
@@ -19,17 +34,17 @@ const Header = () => {
   const userRole = "SOC Analyst";
   const avatarInitials = "GU";
 
-  // Load custom logo + size from localStorage (client only)
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [logoSize, setLogoSize] = useState<number>(defaultLogoSize);
+  // Optimistically initialize state from localStorage to prevent glitch
+  const [logoUrl, setLogoUrl] = useState<string | null>(() => getInitialLogoUrl());
+  const [logoSize, setLogoSize] = useState<number>(() => getInitialLogoSize());
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Update in case changed elsewhere after mount
       setLogoUrl(localStorage.getItem(SETTINGS_LOGO_KEY));
       const sizeStr = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
       setLogoSize(sizeStr ? Number(sizeStr) : defaultLogoSize);
 
-      // Listen for changes to logo or size in settings
       const handleStorage = (e: StorageEvent) => {
         if (e.key === SETTINGS_LOGO_KEY) setLogoUrl(e.newValue);
         if (e.key === SETTINGS_LOGO_SIZE_KEY) setLogoSize(e.newValue ? Number(e.newValue) : defaultLogoSize);
@@ -120,3 +135,4 @@ const Header = () => {
 };
 
 export default Header;
+
