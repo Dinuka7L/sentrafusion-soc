@@ -14,12 +14,14 @@ import { toast } from 'sonner';
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'soc_analyst'>('soc_analyst');
   const navigate = useNavigate();
   const { signIn, signUp, user } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (user) {
+      console.log('User already authenticated, redirecting to dashboard');
       navigate('/');
     }
   }, [user, navigate]);
@@ -32,10 +34,13 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
+    console.log('Login attempt for:', email);
+
     try {
       const { error } = await signIn(email, password);
       
       if (error) {
+        console.error('Login error:', error);
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password. Please try again.');
         } else {
@@ -46,6 +51,7 @@ const Auth = () => {
         navigate('/');
       }
     } catch (error) {
+      console.error('Unexpected login error:', error);
       toast.error('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -62,7 +68,8 @@ const Auth = () => {
     const confirmPassword = formData.get('confirmPassword') as string;
     const username = formData.get('username') as string;
     const fullName = formData.get('fullName') as string;
-    const role = formData.get('role') as 'admin' | 'soc_analyst';
+
+    console.log('Sign up attempt for:', email, 'with role:', selectedRole);
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match.');
@@ -77,9 +84,14 @@ const Auth = () => {
     }
 
     try {
-      const { error } = await signUp(email, password, { username, full_name: fullName, role });
+      const { error } = await signUp(email, password, { 
+        username, 
+        full_name: fullName, 
+        role: selectedRole 
+      });
       
       if (error) {
+        console.error('Sign up error:', error);
         if (error.message.includes('User already registered')) {
           toast.error('An account with this email already exists. Please try logging in instead.');
         } else {
@@ -90,6 +102,7 @@ const Auth = () => {
         setActiveTab('login');
       }
     } catch (error) {
+      console.error('Unexpected sign up error:', error);
       toast.error('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
@@ -181,7 +194,7 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role" className="text-gray-300">Role</Label>
-                  <Select name="role" defaultValue="soc_analyst">
+                  <Select value={selectedRole} onValueChange={(value: 'admin' | 'soc_analyst') => setSelectedRole(value)}>
                     <SelectTrigger className="bg-cyber-gunmetal border-cyber-gunmetal text-white">
                       <SelectValue />
                     </SelectTrigger>
