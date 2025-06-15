@@ -44,7 +44,7 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatIn
 
   return (
     <Card className={cn("bg-cyber-darker border-cyber-gunmetal h-full flex flex-col", className)}>
-      <CardHeader className="border-b border-cyber-gunmetal">
+      <CardHeader className="border-b border-cyber-gunmetal flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-white flex items-center">
             <Bot className="h-5 w-5 mr-2 text-cyber-red" />
@@ -66,9 +66,9 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatIn
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-4 space-y-4">
             {session.messages.map((message) => (
               <div
                 key={message.id}
@@ -120,7 +120,7 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatIn
           </div>
         </ScrollArea>
         
-        <div className="border-t border-cyber-gunmetal p-4">
+        <div className="border-t border-cyber-gunmetal p-4 flex-shrink-0">
           <div className="flex space-x-2">
             <Input
               value={input}
