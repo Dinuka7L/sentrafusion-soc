@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ShimmerText from './ShimmerText';
 
 interface MetricCardProps {
   title: string;
@@ -11,9 +12,18 @@ interface MetricCardProps {
   changeType?: 'positive' | 'negative' | 'neutral';
   icon: LucideIcon;
   className?: string;
+  highlightValue?: boolean; // for shimmer
 }
 
-const MetricCard = ({ title, value, change, changeType = 'neutral', icon: Icon, className }: MetricCardProps) => {
+const MetricCard = ({
+  title,
+  value,
+  change,
+  changeType = 'neutral',
+  icon: Icon,
+  className,
+  highlightValue = false,
+}: MetricCardProps) => {
   return (
     <Card className={cn("bg-cyber-darker border-cyber-gunmetal", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -21,7 +31,11 @@ const MetricCard = ({ title, value, change, changeType = 'neutral', icon: Icon, 
         <Icon className="h-4 w-4 text-cyber-red" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-2xl font-bold text-white">
+          {highlightValue ? (
+            <ShimmerText>{value}</ShimmerText>
+          ) : value}
+        </div>
         {change && (
           <p className={cn(
             "text-xs mt-1",

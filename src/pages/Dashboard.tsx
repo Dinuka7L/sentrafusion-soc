@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Layout from '@/components/layout/Layout';
 import MetricCard from '@/components/dashboard/MetricCard';
@@ -103,6 +102,7 @@ const Dashboard = () => {
               changeType="negative"
               icon={AlertTriangle}
               className={glassClass}
+              highlightValue
             />
             <MetricCard
               title="Open Incidents"
@@ -111,6 +111,7 @@ const Dashboard = () => {
               changeType="positive"
               icon={Shield}
               className={glassClass}
+              highlightValue
             />
             <MetricCard
               title="Avg Response Time"
@@ -119,6 +120,7 @@ const Dashboard = () => {
               changeType="positive"
               icon={Clock}
               className={glassClass}
+              highlightValue
             />
             <MetricCard
               title="Analysts Online"
@@ -127,6 +129,7 @@ const Dashboard = () => {
               changeType="positive"
               icon={Users}
               className={glassClass}
+              highlightValue
             />
           </div>
 
