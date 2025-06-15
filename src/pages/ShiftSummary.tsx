@@ -15,15 +15,19 @@ const ShiftSummaryPage = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-        {/* Demo: Left - now with team filter and manual entry */}
-        <div className="w-full md:w-[32%]">
+      {/* Make this container fill available viewport height (minus header/sidebar) */}
+      <div className="flex flex-col md:flex-row gap-4 md:gap-8 h-[calc(100vh-48px)]">
+        {/* Demo: Left - fill height, flex */}
+        <div className="w-full md:w-[32%] flex flex-col min-h-0 flex-1">
           <TeamFilter selectedTeam={selectedTeam} onSelect={setSelectedTeam} />
-          <DemoShiftSummaryList selectedTeam={selectedTeam} />
+          {/* Make DemoShiftSummaryList fill remaining height using flex-1 and min-h-0 */}
+          <div className="flex-1 min-h-0">
+            <DemoShiftSummaryList selectedTeam={selectedTeam} />
+          </div>
         </div>
 
-        {/* Real data: Right - just data and a compact new summary button */}
-        <div className="w-full md:w-[68%] flex flex-col">
+        {/* Real data: Right - fill height, flex */}
+        <div className="w-full md:w-[68%] flex flex-col min-h-0 flex-1">
           <div className="flex items-center justify-end mb-2">
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
@@ -44,9 +48,12 @@ const ShiftSummaryPage = () => {
               </SheetContent>
             </Sheet>
           </div>
-          <ScrollArea className="h-[calc(100vh-110px)] pr-2">
-            <ShiftSummaryList />
-          </ScrollArea>
+          {/* Fill available height, allow scrolling */}
+          <div className="flex-1 min-h-0">
+            <ScrollArea className="h-full pr-2">
+              <ShiftSummaryList />
+            </ScrollArea>
+          </div>
         </div>
       </div>
     </Layout>
@@ -54,3 +61,4 @@ const ShiftSummaryPage = () => {
 };
 
 export default ShiftSummaryPage;
+
