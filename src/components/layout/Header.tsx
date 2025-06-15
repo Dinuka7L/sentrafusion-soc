@@ -5,15 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Shield, Settings, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const Header = () => {
   const navigate = useNavigate();
-  
-  // Mock user data - in a real app this would come from authentication context
-  const currentUser = {
-    name: 'John Analyst',
-    email: 'j.analyst@company.com',
-    initials: 'JA'
+  const { user, profile, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+      navigate('/auth');
+    } catch (error) {
+      toast.error('Error logging out');
+    }
   };
 
   return (
@@ -37,15 +43,14 @@ const Header = () => {
           <Link to="/knowledge" className="text-gray-300 hover:text-white transition-colors">
             Knowledge
           </Link>
-          <Link to="/incidents" className="text-gray-300 hover:text-white transition-colors">
-            Incidents
-          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
           <div className="text-right text-sm">
-            <p className="text-white font-medium">{currentUser.name}</p>
-            <p className="text-gray-400 text-xs">{currentUser.email}</p>
+            <p className="text-white font-medium">{profile?.full_name || user?.email}</p>
+            <p className="text-gray-400 text-xs">
+              {profile?.role === 'admin' ? 'Administrator' : 'SOC Analyst'}
+            </p>
           </div>
           
           <DropdownMenu>
@@ -54,7 +59,7 @@ const Header = () => {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="/placeholder.svg" alt="User" />
                   <AvatarFallback className="bg-cyber-gunmetal text-white">
-                    {currentUser.initials}
+                    {profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -68,7 +73,7 @@ const Header = () => {
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-cyber-red hover:text-white hover:bg-cyber-red">
+              <DropdownMenuItem onClick={handleLogout} className="text-cyber-red hover:text-white hover:bg-cyber-red">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </DropdownMenuItem>
