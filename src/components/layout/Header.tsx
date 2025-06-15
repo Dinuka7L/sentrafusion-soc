@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,29 +7,59 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Shield, Settings, LogOut, User } from 'lucide-react';
 
 const SETTINGS_LOGO_KEY = "soc-custom-logo";
+const SETTINGS_LOGO_SIZE_KEY = "soc-custom-logo-size";
+const defaultLogoSize = 48;
+const minLogoSize = 32;
+const maxLogoSize = 120;
 
 const Header = () => {
   const navigate = useNavigate();
 
-  // Auth removed: show static guest info
   const fullName = "Guest User";
   const userRole = "SOC Analyst";
   const avatarInitials = "GU";
 
-  // Load custom logo from localStorage
-  let logoUrl: string | null = null;
-  if (typeof window !== "undefined") {
-    logoUrl = localStorage.getItem(SETTINGS_LOGO_KEY);
-  }
+  // Load custom logo + size from localStorage (client only)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [logoSize, setLogoSize] = useState<number>(defaultLogoSize);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setLogoUrl(localStorage.getItem(SETTINGS_LOGO_KEY));
+      const sizeStr = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
+      setLogoSize(sizeStr ? Number(sizeStr) : defaultLogoSize);
+
+      // Listen for changes to logo or size in settings
+      const handleStorage = (e: StorageEvent) => {
+        if (e.key === SETTINGS_LOGO_KEY) setLogoUrl(e.newValue);
+        if (e.key === SETTINGS_LOGO_SIZE_KEY) setLogoSize(e.newValue ? Number(e.newValue) : defaultLogoSize);
+      };
+      window.addEventListener("storage", handleStorage);
+      return () => window.removeEventListener("storage", handleStorage);
+    }
+  }, []);
 
   return (
     <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
           {logoUrl ? (
-            <img src={logoUrl} alt="Custom Logo" className="h-8 w-8 rounded object-contain bg-cyber-gunmetal border p-1" />
+            <img
+              src={logoUrl}
+              alt="Custom Logo"
+              style={{
+                width: logoSize,
+                height: logoSize,
+                minWidth: minLogoSize,
+                minHeight: minLogoSize,
+                maxWidth: maxLogoSize,
+                maxHeight: maxLogoSize,
+                objectFit: "contain"
+              }}
+              className="rounded object-contain bg-cyber-gunmetal border p-1 transition-all shadow"
+            />
           ) : (
-            <Shield className="h-8 w-8 text-cyber-red" />
+            <Shield className="h-10 w-10 text-cyber-red" />
           )}
           <div className="flex flex-col">
             <span className="text-xl font-bold text-white">SOC-Suite</span>
