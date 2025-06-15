@@ -10,6 +10,26 @@ import { Alert } from '@/types';
 import { Search, Filter, RefreshCw, AlertTriangle, Clock } from 'lucide-react';
 import IOCChip from "@/components/alerts/IOCChip";
 
+// Utility: Format how long ago an incident occurred (e.g., "2 hours ago", "5 days ago")
+function formatRelativeTime(date: Date) {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffDay > 0) {
+    return diffDay === 1 ? "1 day ago" : `${diffDay} days ago`;
+  } else if (diffHr > 0) {
+    return diffHr === 1 ? "1 hour ago" : `${diffHr} hours ago`;
+  } else if (diffMin > 2) {
+    return `${diffMin} minutes ago`;
+  } else {
+    return "just now";
+  }
+}
+
 const Alerts = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
@@ -319,7 +339,8 @@ const Alerts = () => {
                     <div className="flex flex-col items-end text-xs text-gray-400">
                       <span className="flex items-center">
                         <Clock className="h-3 w-3 mr-1" />
-                        {incident.timestamp.toLocaleTimeString()}
+                        {/* Show relative time instead of absolute */}
+                        {formatRelativeTime(incident.timestamp)}
                       </span>
                       <span className="mt-1">{incident.source}</span>
                     </div>
