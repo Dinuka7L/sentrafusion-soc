@@ -9,7 +9,7 @@ import { Shield, Settings, LogOut, User } from 'lucide-react';
 let logoImg: string = "https://placehold.co/64x64/png?text=Logo";
 try {
   // @ts-ignore
-  logoImg = require('@/assets/logo.png');
+  logoImg = require('@/assets/sFlogo.png');
 } catch (e) {
   logoImg = "https://placehold.co/64x64/png?text=Logo";
 }
