@@ -13,7 +13,7 @@ const maxLogoSize = 140;
 const Header = () => {
   const navigate = useNavigate();
 
-  const fullName = "Guest User";
+  const fullName = "Dinuka";
   const userRole = "SOC Analyst";
   const avatarInitials = "GU";
 
@@ -73,7 +73,7 @@ const Header = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="/placeholder.svg" alt="User" />
+                  <AvatarImage src="https://avatars.githubusercontent.com/u/179111403?v=4" alt="User" />
                   <AvatarFallback className="bg-cyber-gunmetal text-white">
                     {avatarInitials}
                   </AvatarFallback>
