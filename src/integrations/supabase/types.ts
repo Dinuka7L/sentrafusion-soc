@@ -98,6 +98,199 @@ export type Database = {
         }
         Relationships: []
       }
+      shift_summaries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          external_threat_intel: string | null
+          file_attachment_path: string | null
+          id: string
+          previous_summary_id: string | null
+          report_text: string | null
+          shift_date: string
+          shift_end: string | null
+          shift_lead_id: string | null
+          shift_lead_name: string | null
+          shift_start: string | null
+          team_notes: string | null
+          updated_at: string | null
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          external_threat_intel?: string | null
+          file_attachment_path?: string | null
+          id?: string
+          previous_summary_id?: string | null
+          report_text?: string | null
+          shift_date: string
+          shift_end?: string | null
+          shift_lead_id?: string | null
+          shift_lead_name?: string | null
+          shift_start?: string | null
+          team_notes?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          external_threat_intel?: string | null
+          file_attachment_path?: string | null
+          id?: string
+          previous_summary_id?: string | null
+          report_text?: string | null
+          shift_date?: string
+          shift_end?: string | null
+          shift_lead_id?: string | null
+          shift_lead_name?: string | null
+          shift_start?: string | null
+          team_notes?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_summaries_previous_summary_id_fkey"
+            columns: ["previous_summary_id"]
+            isOneToOne: false
+            referencedRelation: "shift_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_summary_iocs: {
+        Row: {
+          description: string | null
+          external_link: string | null
+          id: string
+          ioc_type: string | null
+          ioc_value: string | null
+          shift_summary_id: string
+        }
+        Insert: {
+          description?: string | null
+          external_link?: string | null
+          id?: string
+          ioc_type?: string | null
+          ioc_value?: string | null
+          shift_summary_id: string
+        }
+        Update: {
+          description?: string | null
+          external_link?: string | null
+          id?: string
+          ioc_type?: string | null
+          ioc_value?: string | null
+          shift_summary_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_summary_iocs_shift_summary_id_fkey"
+            columns: ["shift_summary_id"]
+            isOneToOne: false
+            referencedRelation: "shift_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_summary_kb_updates: {
+        Row: {
+          description: string | null
+          id: string
+          kb_doc_id: string | null
+          shift_summary_id: string
+          title: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          kb_doc_id?: string | null
+          shift_summary_id: string
+          title?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          kb_doc_id?: string | null
+          shift_summary_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_summary_kb_updates_shift_summary_id_fkey"
+            columns: ["shift_summary_id"]
+            isOneToOne: false
+            referencedRelation: "shift_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_summary_priorities: {
+        Row: {
+          id: string
+          priority_text: string | null
+          shift_summary_id: string
+        }
+        Insert: {
+          id?: string
+          priority_text?: string | null
+          shift_summary_id: string
+        }
+        Update: {
+          id?: string
+          priority_text?: string | null
+          shift_summary_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_summary_priorities_shift_summary_id_fkey"
+            columns: ["shift_summary_id"]
+            isOneToOne: false
+            referencedRelation: "shift_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_summary_tickets: {
+        Row: {
+          analyst_comment: string | null
+          id: string
+          recommended_next_actions: string | null
+          shift_summary_id: string
+          status: string | null
+          ticket_id: string
+        }
+        Insert: {
+          analyst_comment?: string | null
+          id?: string
+          recommended_next_actions?: string | null
+          shift_summary_id: string
+          status?: string | null
+          ticket_id: string
+        }
+        Update: {
+          analyst_comment?: string | null
+          id?: string
+          recommended_next_actions?: string | null
+          shift_summary_id?: string
+          status?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_summary_tickets_shift_summary_id_fkey"
+            columns: ["shift_summary_id"]
+            isOneToOne: false
+            referencedRelation: "shift_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

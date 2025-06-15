@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,7 @@ import Alerts from "./pages/Alerts";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Knowledge from "./pages/Knowledge";
+import ShiftSummaryPage from "./pages/ShiftSummary";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +45,7 @@ const App = () => (
             <Dashboard />
           } />
           <Route path="/shift-summary" element={
-            <Dashboard />
+            <ShiftSummaryPage />
           } />
           <Route path="/analytics" element={
             <Dashboard />

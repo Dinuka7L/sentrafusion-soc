@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -91,12 +90,56 @@ export interface Incident {
 
 export interface ShiftSummary {
   id: string;
-  date: Date;
-  shift: 'day' | 'evening' | 'night';
-  analyst: User;
-  alertsHandled: number;
-  incidentsResolved: number;
-  newIOCs: number;
-  notes: string;
-  handoffNotes: string;
+  shift_date: string; // ISO Date string
+  shift_start?: string | null;
+  shift_end?: string | null;
+  shift_lead_id?: string | null;
+  shift_lead_name?: string | null;
+  team_notes?: string | null;
+  external_threat_intel?: string | null;
+  report_text?: string | null;
+  version: number;
+  created_by?: string | null;
+  created_at: string;
+  updated_by?: string | null;
+  updated_at?: string | null;
+  file_attachment_path?: string | null;
+  previous_summary_id?: string | null;
+
+  tickets?: ShiftSummaryTicket[];
+  iocs?: ShiftSummaryIOC[];
+  kb_updates?: ShiftSummaryKBUpdate[];
+  priorities?: ShiftSummaryPriority[];
+}
+
+export interface ShiftSummaryTicket {
+  id: string;
+  shift_summary_id: string;
+  ticket_id: string;
+  status?: string | null;
+  recommended_next_actions?: string | null;
+  analyst_comment?: string | null;
+}
+
+export interface ShiftSummaryIOC {
+  id: string;
+  shift_summary_id: string;
+  ioc_type?: string | null;
+  ioc_value?: string | null;
+  description?: string | null;
+  external_link?: string | null;
+}
+
+export interface ShiftSummaryKBUpdate {
+  id: string;
+  shift_summary_id: string;
+  kb_doc_id?: string | null;
+  title?: string | null;
+  description?: string | null;
+}
+
+export interface ShiftSummaryPriority {
+  id: string;
+  shift_summary_id: string;
+  priority_text?: string | null;
 }
