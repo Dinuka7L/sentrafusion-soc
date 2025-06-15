@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert } from '@/types';
 import { Search, Filter, RefreshCw, AlertTriangle, Clock } from 'lucide-react';
+import IOCChip from "@/components/alerts/IOCChip";
 
 const Alerts = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -331,9 +332,11 @@ const Alerts = () => {
                       <h4 className="text-sm font-medium text-gray-300">IOCs:</h4>
                       <div className="flex flex-wrap gap-1">
                         {incident.iocs.slice(0, 3).map(ioc => (
-                          <Badge key={ioc.id} variant="outline" className="text-xs">
-                            {ioc.type}: {ioc.value.substring(0, 20)}...
-                          </Badge>
+                          <IOCChip
+                            key={ioc.id}
+                            type={ioc.type}
+                            value={ioc.value}
+                          />
                         ))}
                         {incident.iocs.length > 3 && (
                           <Badge variant="outline" className="text-xs">
