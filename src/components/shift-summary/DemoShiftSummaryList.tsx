@@ -1,7 +1,7 @@
-
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 // Demo data structure
@@ -193,7 +193,11 @@ const demoDataRaw: DemoSummary[] = [
   },
 ];
 
-// Group by date descending
+// Add team filter logic
+interface DemoShiftSummaryListProps {
+  selectedTeam?: string; // '' or team name
+}
+
 const groupedByDate = demoDataRaw.reduce<Record<string, DemoSummary[]>>((acc, s) => {
   if (!acc[s.date]) acc[s.date] = [];
   acc[s.date].push(s);
@@ -202,106 +206,120 @@ const groupedByDate = demoDataRaw.reduce<Record<string, DemoSummary[]>>((acc, s)
 
 const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a)); // newest first
 
-const DemoShiftSummaryList: React.FC = () => (
-  <div>
-    <div className="text-lg font-semibold text-white mb-2">Demo Shift Summaries</div>
-    <div className="text-xs text-gray-400 mb-4">
-      The following example summaries showcase typical SOC handoff scenarios by date and team, for demo purposes.
-    </div>
+const DemoShiftSummaryList: React.FC<DemoShiftSummaryListProps> = ({
+  selectedTeam = "",
+}) => {
+  // Filter summaries by team if selected
+  const filteredByTeam = (summaries: DemoSummary[]) =>
+    selectedTeam ? summaries.filter((s) => s.team === selectedTeam) : summaries;
+
+  return (
     <div>
-      {sortedDates.map(date => (
-        <div key={date} className="mb-6">
-          <div className="flex items-center mb-3">
-            <Separator className="flex-1 bg-cyber-gunmetal" />
-            <span className="mx-3 text-xs font-semibold text-cyber-red">
-              {new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-            </span>
-            <Separator className="flex-1 bg-cyber-gunmetal" />
-          </div>
-          <div className="grid gap-4">
-            {groupedByDate[date].map((summary) => (
-              <Card key={summary.id} className={cn(
-                "bg-gradient-to-br border-cyber-gunmetal text-white transition",
-                summary.team === "Team Athena" && "from-fuchsia-950/60 to-cyber-darker/95",
-                summary.team === "Team Zeus" && "from-blue-950/60 to-cyber-darker/95",
-                summary.team === "Team Apollo" && "from-orange-900/70 to-cyber-darker/95",
-                summary.team === "Team Hades" && "from-gray-900/90 to-cyber-darker/95"
-              )}>
-                <CardHeader className="pb-2 flex flex-col gap-y-1">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex flex-row gap-x-2 items-center">
-                      <span className={cn("font-bold", {
-                        "text-fuchsia-300": summary.team === "Team Athena",
-                        "text-blue-300": summary.team === "Team Zeus",
-                        "text-orange-300": summary.team === "Team Apollo",
-                        "text-gray-200": summary.team === "Team Hades",
-                      })}>{summary.team}</span>
-                      <span className="px-2 py-0.5 text-xs rounded bg-cyber-gunmetal text-gray-200 font-normal">{summary.shift}</span>
-                    </CardTitle>
-                    <span className="text-xs text-gray-300">
-                      Shift Lead: <span className="font-medium text-white">{summary.shiftLead}</span>
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="grid gap-2 text-sm">
-                  {summary.criticalUpdates.length > 0 && (
-                    <div>
-                      <div className="font-semibold text-cyber-red">Critical Updates:</div>
-                      <ul className="list-disc list-inside text-gray-100 mt-1">
-                        {summary.criticalUpdates.map((text, idx) => (
-                          <li key={idx}>{text}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {summary.newIOCs && summary.newIOCs.length > 0 && (
-                    <div>
-                      <div className="font-semibold text-cyber-red">New IoCs:</div>
-                      <ul className="list-disc list-inside text-gray-100 mt-1">
-                        {summary.newIOCs.map((text, idx) => (
-                          <li key={idx}>{text}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {summary.kbUpdates && summary.kbUpdates.length > 0 && (
-                    <div>
-                      <div className="font-semibold text-cyber-red">Knowledge Base Updates:</div>
-                      <ul className="list-disc list-inside text-gray-100 mt-1">
-                        {summary.kbUpdates.map((text, idx) => (
-                          <li key={idx}>{text}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {summary.notes && summary.notes.length > 0 && (
-                    <div>
-                      <div className="font-semibold text-cyber-red">Notes:</div>
-                      <ul className="list-disc list-inside text-gray-100 mt-1">
-                        {summary.notes.map((text, idx) => (
-                          <li key={idx}>{text}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {summary.recommendations && summary.recommendations.length > 0 && (
-                    <div>
-                      <div className="font-semibold text-cyber-red">Recommendations:</div>
-                      <ul className="list-disc list-inside text-gray-100 mt-1">
-                        {summary.recommendations.map((text, idx) => (
-                          <li key={idx}>{text}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="text-lg font-semibold text-white mb-2">Demo Shift Summaries</div>
+      <div className="text-xs text-gray-400 mb-4">
+        The following example summaries showcase typical SOC handoff scenarios by date and team, for demo purposes.
+      </div>
+      <ScrollArea className="h-[calc(100vh-175px)] pr-2">
+        <div>
+          {sortedDates.map(date => {
+            const dateSummaries = filteredByTeam(groupedByDate[date]);
+            if (!dateSummaries.length) return null;
+            return (
+              <div key={date} className="mb-6">
+                <div className="flex items-center mb-3">
+                  <Separator className="flex-1 bg-cyber-gunmetal" />
+                  <span className="mx-3 text-xs font-semibold text-cyber-red">
+                    {new Date(date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                  </span>
+                  <Separator className="flex-1 bg-cyber-gunmetal" />
+                </div>
+                <div className="grid gap-4">
+                  {dateSummaries.map((summary) => (
+                    <Card key={summary.id} className={cn(
+                      "bg-gradient-to-br border-cyber-gunmetal text-white transition",
+                      summary.team === "Team Athena" && "from-fuchsia-950/60 to-cyber-darker/95",
+                      summary.team === "Team Zeus" && "from-blue-950/60 to-cyber-darker/95",
+                      summary.team === "Team Apollo" && "from-orange-900/70 to-cyber-darker/95",
+                      summary.team === "Team Hades" && "from-gray-900/90 to-cyber-darker/95"
+                    )}>
+                      <CardHeader className="pb-2 flex flex-col gap-y-1">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base flex flex-row gap-x-2 items-center">
+                            <span className={cn("font-bold", {
+                              "text-fuchsia-300": summary.team === "Team Athena",
+                              "text-blue-300": summary.team === "Team Zeus",
+                              "text-orange-300": summary.team === "Team Apollo",
+                              "text-gray-200": summary.team === "Team Hades",
+                            })}>{summary.team}</span>
+                            <span className="px-2 py-0.5 text-xs rounded bg-cyber-gunmetal text-gray-200 font-normal">{summary.shift}</span>
+                          </CardTitle>
+                          <span className="text-xs text-gray-300">
+                            Shift Lead: <span className="font-medium text-white">{summary.shiftLead}</span>
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="grid gap-2 text-sm">
+                        {summary.criticalUpdates.length > 0 && (
+                          <div>
+                            <div className="font-semibold text-cyber-red">Critical Updates:</div>
+                            <ul className="list-disc list-inside text-gray-100 mt-1">
+                              {summary.criticalUpdates.map((text, idx) => (
+                                <li key={idx}>{text}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {summary.newIOCs && summary.newIOCs.length > 0 && (
+                          <div>
+                            <div className="font-semibold text-cyber-red">New IoCs:</div>
+                            <ul className="list-disc list-inside text-gray-100 mt-1">
+                              {summary.newIOCs.map((text, idx) => (
+                                <li key={idx}>{text}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {summary.kbUpdates && summary.kbUpdates.length > 0 && (
+                          <div>
+                            <div className="font-semibold text-cyber-red">Knowledge Base Updates:</div>
+                            <ul className="list-disc list-inside text-gray-100 mt-1">
+                              {summary.kbUpdates.map((text, idx) => (
+                                <li key={idx}>{text}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {summary.notes && summary.notes.length > 0 && (
+                          <div>
+                            <div className="font-semibold text-cyber-red">Notes:</div>
+                            <ul className="list-disc list-inside text-gray-100 mt-1">
+                              {summary.notes.map((text, idx) => (
+                                <li key={idx}>{text}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {summary.recommendations && summary.recommendations.length > 0 && (
+                          <div>
+                            <div className="font-semibold text-cyber-red">Recommendations:</div>
+                            <ul className="list-disc list-inside text-gray-100 mt-1">
+                              {summary.recommendations.map((text, idx) => (
+                                <li key={idx}>{text}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
-      ))}
+      </ScrollArea>
     </div>
-  </div>
-);
+  );
+};
 
 export default DemoShiftSummaryList;
