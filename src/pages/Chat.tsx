@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import ChatInterface from '@/components/chat/ChatInterface';
@@ -180,6 +179,18 @@ const demoSessions: ChatSession[] = [
   },
 ];
 
+const dummyAIResponses = [
+  "Here's a summary according to available threat knowledge.",
+  "I've found some matching IOCs for you.",
+  "Would you like to create a ticket for this?",
+  "Let me know if you need escalation support.",
+  "Further details are available in the playbook.",
+  "I recommend reviewing the alert context for next steps.",
+  "Check recent incidents in your dashboard.",
+  "Let me know if you want a report exported.",
+  "Ready for your next question.",
+];
+
 const Chat = () => {
   // Clone the sessions statefully so each can have independent dynamic messages
   const [sessions, setSessions] = useState<ChatSession[]>(
@@ -191,8 +202,14 @@ const Chat = () => {
   const activeChatIdx = sessions.findIndex((chat) => chat.id === activeChatId);
   const activeChat = sessions[activeChatIdx];
 
+  const [isComposing, setIsComposing] = useState(false);
+
+  // For scrollable sidebar - only show 5 at a time
+  const visibleSessions = sessions.slice(0, 5);
+  const moreSessions = sessions.length > 5;
+
   const handleSendMessage = (content: string) => {
-    // Add a dummy user message
+    // Add user message immediately
     const newMsg: ChatMessage = {
       id: `${activeChat.messages.length + 1}`,
       content,
@@ -204,11 +221,30 @@ const Chat = () => {
       messages: [...activeChat.messages, newMsg],
       updatedAt: new Date(),
     };
-    // Replace in sessions
     setSessions((prev) =>
       prev.map((chat, i) => (i === activeChatIdx ? updatedChat : chat))
     );
-    // No auto-reply: only showcase dummy user message sending
+    // 1. Show AI composing...
+    setIsComposing(true);
+    // 2. After 1.4s, add dummy AI response and hide composing
+    setTimeout(() => {
+      // Pick a random dummy AI message
+      const aiMsg: ChatMessage = {
+        id: `${updatedChat.messages.length + 1}`,
+        content: dummyAIResponses[Math.floor(Math.random() * dummyAIResponses.length)],
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      const nextUpdatedChat: ChatSession = {
+        ...updatedChat,
+        messages: [...updatedChat.messages, aiMsg],
+        updatedAt: new Date(),
+      };
+      setSessions((prev) =>
+        prev.map((chat, i) => (i === activeChatIdx ? nextUpdatedChat : chat))
+      );
+      setIsComposing(false);
+    }, 1400);
   };
 
   const handleEscalate = () => {
@@ -231,30 +267,58 @@ const Chat = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {sessions.map((session) => (
-                <div
-                  key={session.id}
-                  onClick={() => setActiveChatId(session.id)}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                    session.id === activeChatId
-                      ? 'bg-cyber-red text-white'
-                      : 'bg-cyber-gunmetal/50 text-gray-300 hover:bg-cyber-gunmetal'
-                  }`}
-                >
-                  <div className="font-medium truncate">{session.title}</div>
-                  <div className="text-xs flex items-center mt-1 opacity-75">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {session.updatedAt.toLocaleTimeString()}
+              <div className="max-h-80 overflow-y-auto flex flex-col gap-2">
+                {visibleSessions.map((session) => (
+                  <div
+                    key={session.id}
+                    onClick={() => setActiveChatId(session.id)}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                      session.id === activeChatId
+                        ? 'bg-cyber-red text-white'
+                        : 'bg-cyber-gunmetal/50 text-gray-300 hover:bg-cyber-gunmetal'
+                    }`}
+                  >
+                    <div className="font-medium truncate">{session.title}</div>
+                    <div className="text-xs flex items-center mt-1 opacity-75">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {session.updatedAt.toLocaleTimeString()}
+                    </div>
+                    {(session.title.includes('Emergency') || session.title.includes('Incident')) && (
+                      <Badge variant="outline" className="mt-2 text-xs border-cyber-red text-cyber-red">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Escalation
+                      </Badge>
+                    )}
                   </div>
-                  {/* Optionally, escalate for some sessions */}
-                  {(session.title.includes('Emergency') || session.title.includes('Incident')) && (
-                    <Badge variant="outline" className="mt-2 text-xs border-cyber-red text-cyber-red">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Escalation
-                    </Badge>
-                  )}
-                </div>
-              ))}
+                ))}
+                {moreSessions && (
+                  <div className="flex-1 min-h-[40px] overflow-y-auto">
+                    {sessions.slice(5).map((session) => (
+                      <div
+                        key={session.id}
+                        onClick={() => setActiveChatId(session.id)}
+                        className={`p-3 rounded-lg cursor-pointer transition-colors mt-2 ${
+                          session.id === activeChatId
+                            ? 'bg-cyber-red text-white'
+                            : 'bg-cyber-gunmetal/50 text-gray-300 hover:bg-cyber-gunmetal'
+                        }`}
+                      >
+                        <div className="font-medium truncate">{session.title}</div>
+                        <div className="text-xs flex items-center mt-1 opacity-75">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {session.updatedAt.toLocaleTimeString()}
+                        </div>
+                        {(session.title.includes('Emergency') || session.title.includes('Incident')) && (
+                          <Badge variant="outline" className="mt-2 text-xs border-cyber-red text-cyber-red">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Escalation
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -295,6 +359,7 @@ const Chat = () => {
             session={activeChat}
             onSendMessage={handleSendMessage}
             onEscalate={handleEscalate}
+            isComposing={isComposing}
             className="h-full"
           />
         </div>

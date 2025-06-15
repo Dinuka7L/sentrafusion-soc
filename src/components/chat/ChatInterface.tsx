@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,15 +7,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage, ChatSession } from '@/types';
 import { Send, Bot, User, FileText, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import AIComposingBubble from './AIComposingBubble';
 
 interface ChatInterfaceProps {
   session: ChatSession;
   onSendMessage: (content: string) => void;
   onEscalate?: () => void;
   className?: string;
+  isComposing?: boolean;
 }
 
-const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatInterfaceProps) => {
+const ChatInterface = ({ session, onSendMessage, onEscalate, className, isComposing }: ChatInterfaceProps) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,7 +27,7 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatIn
 
   useEffect(() => {
     scrollToBottom();
-  }, [session.messages]);
+  }, [session.messages, isComposing]);
 
   const handleSend = () => {
     if (input.trim()) {
@@ -116,6 +117,8 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatIn
                 </div>
               </div>
             ))}
+            {/* "AI is composing..." bubble, if composing */}
+            {isComposing && <AIComposingBubble />}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
@@ -131,7 +134,7 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className }: ChatIn
             />
             <Button 
               onClick={handleSend}
-              disabled={!input.trim()}
+              disabled={!input.trim() || isComposing}
               className="bg-cyber-red hover:bg-cyber-red-dark text-white"
             >
               <Send className="h-4 w-4" />
