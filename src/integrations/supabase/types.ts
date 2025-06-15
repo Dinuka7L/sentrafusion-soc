@@ -9,6 +9,68 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      knowledge_categories: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      knowledge_documents: {
+        Row: {
+          category_id: string | null
+          description: string | null
+          file_path: string | null
+          file_type: string | null
+          id: string
+          indexed: boolean | null
+          tags: string[] | null
+          title: string
+          uploaded_at: string | null
+          url: string | null
+        }
+        Insert: {
+          category_id?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_type?: string | null
+          id?: string
+          indexed?: boolean | null
+          tags?: string[] | null
+          title: string
+          uploaded_at?: string | null
+          url?: string | null
+        }
+        Update: {
+          category_id?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_type?: string | null
+          id?: string
+          indexed?: boolean | null
+          tags?: string[] | null
+          title?: string
+          uploaded_at?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_documents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
