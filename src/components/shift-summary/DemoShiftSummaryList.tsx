@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -206,23 +206,226 @@ const groupedByDate = demoDataRaw.reduce<Record<string, DemoSummary[]>>((acc, s)
 
 const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a)); // newest first
 
+// --- Add Manual Demo Entry at the top ---
 const DemoShiftSummaryList: React.FC<DemoShiftSummaryListProps> = ({
   selectedTeam = "",
 }) => {
+  // Demo data now as state, so we can add manually
+  const [demoData, setDemoData] = useState<DemoSummary[]>(demoDataRaw);
+
+  // Form state for manual demo entry
+  const [form, setForm] = useState<Partial<DemoSummary>>({
+    team: "",
+    shift: "",
+    date: "",
+    shiftLead: "",
+    criticalUpdates: [],
+    newIOCs: [],
+    kbUpdates: [],
+    recommendations: [],
+    notes: [],
+  });
+  const [showForm, setShowForm] = useState(false);
+
   // Filter summaries by team if selected
   const filteredByTeam = (summaries: DemoSummary[]) =>
     selectedTeam ? summaries.filter((s) => s.team === selectedTeam) : summaries;
 
+  // Add a demo summary to the list
+  const addDemoSummary = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.team || !form.date || !form.shift) {
+      return; // basic required fields
+    }
+    setDemoData([
+      {
+        id: Date.now().toString(),
+        team: form.team,
+        shift: form.shift,
+        date: form.date,
+        shiftLead: form.shiftLead || "",
+        criticalUpdates: form.criticalUpdates || [],
+        newIOCs: form.newIOCs || [],
+        kbUpdates: form.kbUpdates || [],
+        recommendations: form.recommendations || [],
+        notes: form.notes || [],
+      },
+      ...demoData,
+    ]);
+    setForm({
+      team: "",
+      shift: "",
+      date: "",
+      shiftLead: "",
+      criticalUpdates: [],
+      newIOCs: [],
+      kbUpdates: [],
+      recommendations: [],
+      notes: [],
+    });
+    setShowForm(false);
+  };
+
+  // Group and sort new demoData by date for display
+  const grouped = demoData.reduce<Record<string, DemoSummary[]>>((acc, s) => {
+    if (!acc[s.date]) acc[s.date] = [];
+    acc[s.date].push(s);
+    return acc;
+  }, {});
+  const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
   return (
     <div>
-      <div className="text-lg font-semibold text-white mb-2">Demo Shift Summaries</div>
-      <div className="text-xs text-gray-400 mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-lg font-semibold text-white">Demo Shift Summaries</span>
+        <button
+          onClick={() => setShowForm((v) => !v)}
+          className="text-xs text-cyber-red border border-cyber-red rounded px-2 py-1 hover:bg-cyber-red/20"
+        >
+          {showForm ? "Cancel" : "+ Add Demo"}
+        </button>
+      </div>
+      <div className="text-xs text-gray-400 mb-2">
         The following example summaries showcase typical SOC handoff scenarios by date and team, for demo purposes.
       </div>
+      {showForm && (
+        <form className="bg-cyber-gunmetal rounded p-3 mb-4 text-xs grid gap-2" onSubmit={addDemoSummary}>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-gray-200 font-medium">Team*</label>
+              <select
+                required
+                value={form.team}
+                onChange={e => setForm(f => ({ ...f, team: e.target.value }))}
+                className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+              >
+                <option value="">Choose team</option>
+                <option value="Team Athena">Team Athena</option>
+                <option value="Team Zeus">Team Zeus</option>
+                <option value="Team Apollo">Team Apollo</option>
+                <option value="Team Hades">Team Hades</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-gray-200 font-medium">Shift*</label>
+              <input
+                required
+                type="text"
+                className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+                value={form.shift}
+                placeholder="e.g. Morning Shift"
+                onChange={e => setForm(f => ({ ...f, shift: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="text-gray-200 font-medium">Date*</label>
+              <input
+                required
+                type="date"
+                className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+                value={form.date}
+                onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="text-gray-200 font-medium">Shift Lead</label>
+              <input
+                type="text"
+                className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+                value={form.shiftLead ?? ""}
+                placeholder="Name (optional)"
+                onChange={e => setForm(f => ({ ...f, shiftLead: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-gray-200 font-medium">Critical Updates</label>
+            <textarea
+              className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+              rows={2}
+              placeholder="Enter each as a line"
+              value={form.criticalUpdates?.join('\n') || ""}
+              onChange={e =>
+                setForm(f => ({
+                  ...f,
+                  criticalUpdates: e.target.value.split('\n').filter(Boolean),
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label className="text-gray-200 font-medium">New IoCs</label>
+            <textarea
+              className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+              rows={2}
+              placeholder="Indicators of Compromise (each line is an entry)"
+              value={form.newIOCs?.join('\n') || ""}
+              onChange={e =>
+                setForm(f => ({
+                  ...f,
+                  newIOCs: e.target.value.split('\n').filter(Boolean),
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label className="text-gray-200 font-medium">Knowledge Base Updates</label>
+            <textarea
+              className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+              rows={1}
+              placeholder="Each line is a KB update"
+              value={form.kbUpdates?.join('\n') || ""}
+              onChange={e =>
+                setForm(f => ({
+                  ...f,
+                  kbUpdates: e.target.value.split('\n').filter(Boolean),
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label className="text-gray-200 font-medium">Recommendations</label>
+            <textarea
+              className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+              rows={1}
+              placeholder="Each line is a recommendation"
+              value={form.recommendations?.join('\n') || ""}
+              onChange={e =>
+                setForm(f => ({
+                  ...f,
+                  recommendations: e.target.value.split('\n').filter(Boolean),
+                }))
+              }
+            />
+          </div>
+          <div>
+            <label className="text-gray-200 font-medium">Notes</label>
+            <textarea
+              className="w-full p-1 rounded bg-black border border-cyber-gunmetal text-white"
+              rows={1}
+              placeholder="Each line is a note"
+              value={form.notes?.join('\n') || ""}
+              onChange={e =>
+                setForm(f => ({
+                  ...f,
+                  notes: e.target.value.split('\n').filter(Boolean),
+                }))
+              }
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-cyber-red text-white py-1 rounded hover:bg-cyber-red-dark transition"
+          >
+            Add Demo Summary
+          </button>
+        </form>
+      )}
+
       <ScrollArea className="h-[calc(100vh-175px)] pr-2">
         <div>
           {sortedDates.map(date => {
-            const dateSummaries = filteredByTeam(groupedByDate[date]);
+            const dateSummaries = filteredByTeam(grouped[date]);
             if (!dateSummaries.length) return null;
             return (
               <div key={date} className="mb-6">
@@ -323,3 +526,5 @@ const DemoShiftSummaryList: React.FC<DemoShiftSummaryListProps> = ({
 };
 
 export default DemoShiftSummaryList;
+
+// NOTE: This file is getting pretty long. If you’d like to refactor it into smaller components for better maintainability, just let me know!

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +22,7 @@ const ShiftSummaryList = () => {
 
   if (isLoading) return <div className="text-white">Loading...</div>;
   if (error) return <div className="text-red-500">Error loading shift summaries</div>;
-  if (!data?.length) return <div className="text-gray-400">No shift summaries found.</div>;
+  if (!data?.length) return null; // Nothing shown if empty
 
   return (
     <div className="grid gap-4">
