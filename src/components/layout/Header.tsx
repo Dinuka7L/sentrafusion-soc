@@ -4,19 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Shield, Settings, LogOut, User } from 'lucide-react';
+import sFlogo from '@/assets/sFlogo.png'; // ✅ Proper ES Module import
 
-// Use a try-catch so missing logo.png does not break the build
-let logoImg: string = "https://placehold.co/64x64/png?text=Logo";
-try {
-  // @ts-ignore
-  logoImg = require('@/assets/sFlogo.png');
-} catch (e) {
-  logoImg = "https://placehold.co/64x64/png?text=Logo";
-}
-
-const defaultLogoSize = 48;
+const defaultLogoSize = 140;
 const minLogoSize = 32;
-const maxLogoSize = 120;
+const maxLogoSize = 140;
 
 const Header = () => {
   const navigate = useNavigate();
@@ -29,9 +21,9 @@ const Header = () => {
     <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-          {logoImg ? (
+          {sFlogo ? (
             <img
-              src={logoImg}
+              src={sFlogo} // ✅ Use imported image directly
               alt="Logo"
               style={{
                 width: defaultLogoSize,
