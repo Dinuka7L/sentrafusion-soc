@@ -9,6 +9,7 @@ import Chat from "./pages/Chat";
 import Alerts from "./pages/Alerts";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Knowledge from "./pages/Knowledge";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +39,7 @@ const App = () => (
             <Dashboard />
           } />
           <Route path="/knowledge" element={
-            <Dashboard />
+            <Knowledge />
           } />
           <Route path="/connectors" element={
             <Dashboard />
