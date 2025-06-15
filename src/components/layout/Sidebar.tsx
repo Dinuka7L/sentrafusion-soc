@@ -36,10 +36,22 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className={cn(
-      "relative h-screen bg-cyber-darker border-r border-cyber-gunmetal transition-all duration-300",
-      collapsed ? "w-16" : "w-64"
-    )}>
+    <div
+      className={cn(
+        // Add gradient, blur, and transparency
+        "relative h-screen bg-gradient-to-b from-black via-cyber-darker to-cyber-red/90 border-r border-cyber-gunmetal transition-all duration-300",
+        "backdrop-blur-xl bg-opacity-70 shadow-lg",
+        collapsed ? "w-16" : "w-64"
+      )}
+      style={{
+        // Fallback for background if Tailwind hasn't parsed the color
+        background:
+          "linear-gradient(180deg, rgba(0,0,0,0.87) 0%, rgba(30,30,30,0.75) 70%, rgba(198,40,40,0.35) 100%)",
+        // Glass morphism: combine blur and background transparency
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
+      }}
+    >
       <div className="flex flex-col h-full">
         <div className="p-4 border-b border-cyber-gunmetal">
           <Button
@@ -57,7 +69,6 @@ const Sidebar = () => {
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
-              
               return (
                 <li key={item.href}>
                   <Link
@@ -66,10 +77,18 @@ const Sidebar = () => {
                       "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       "hover:bg-cyber-gunmetal hover:text-white",
                       isActive 
-                        ? "bg-cyber-red text-white" 
+                        ? "bg-cyber-red/80 text-white shadow-lg backdrop-blur-sm" 
                         : "text-gray-300",
                       collapsed && "justify-center"
                     )}
+                    style={{
+                      background: isActive
+                        ? "rgba(198,40,40,0.5)"
+                        : undefined,
+                      backdropFilter: isActive
+                        ? "blur(10px)"
+                        : undefined,
+                    }}
                   >
                     <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
                     {!collapsed && <span>{item.label}</span>}
@@ -100,3 +119,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
