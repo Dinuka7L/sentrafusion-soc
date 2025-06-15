@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Knowledge from "./pages/Knowledge";
 import ShiftSummaryPage from "./pages/ShiftSummary";
+import Settings from "./pages/Settings"; // Add this import
 
 const queryClient = new QueryClient();
 
@@ -30,7 +31,7 @@ const App = () => (
         <Route path="/connectors" element={<Dashboard />} />
         <Route path="/shift-summary" element={<ShiftSummaryPage />} />
         <Route path="/analytics" element={<Dashboard />} />
-        <Route path="/settings" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} /> {/* FIX: was <Dashboard /> */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </TooltipProvider>
