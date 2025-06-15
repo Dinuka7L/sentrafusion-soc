@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert } from '@/types';
-import { Search, Filter, RefreshCw, AlertTriangle, Clock } from 'lucide-react';
+import { Search, Filter, RefreshCw, Plus, AlertTriangle, Clock } from 'lucide-react';
 import IOCChip from "@/components/alerts/IOCChip";
+import AddIncidentDialog from "@/components/alerts/AddIncidentDialog";
+import LoaderOverlay from "@/components/ui/loader-overlay";
 
 // Utility: Format how long ago an incident occurred (e.g., "2 hours ago", "5 days ago")
 function formatRelativeTime(date: Date) {
@@ -30,113 +32,118 @@ function formatRelativeTime(date: Date) {
   }
 }
 
+const initialIncidents: (Alert & { priority: number })[] = [
+  {
+    id: '1',
+    title: 'Critical System Breach - Active APT Campaign',
+    description: 'Advanced persistent threat detected with active data exfiltration. Multiple compromised endpoints with C2 communications established.',
+    severity: 'critical',
+    priority: 1,
+    source: 'SIEM Correlation Engine',
+    timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+    status: 'open',
+    iocs: [
+      { id: '1', type: 'hash', value: 'a1b2c3d4e5f6789abcdef', confidence: 95, tags: ['malware', 'apt'], firstSeen: new Date(), lastSeen: new Date() },
+      { id: '2', type: 'ip', value: '192.168.100.50', confidence: 87, tags: ['c2'], firstSeen: new Date(), lastSeen: new Date() }
+    ]
+  },
+  {
+    id: '2',
+    title: 'Ransomware Activity Detected',
+    description: 'Suspicious encryption activity and ransom note deployment detected on multiple workstations in Finance department.',
+    severity: 'critical',
+    priority: 1,
+    source: 'Endpoint Protection',
+    timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
+    status: 'investigating',
+    assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' },
+    iocs: [
+      { id: '3', type: 'hash', value: 'f1e2d3c4b5a6789fedcba', confidence: 98, tags: ['ransomware'], firstSeen: new Date(), lastSeen: new Date() }
+    ]
+  },
+  {
+    id: '3',
+    title: 'Privilege Escalation Attempt',
+    description: 'User account attempted to escalate privileges using known vulnerability CVE-2021-1234.',
+    severity: 'high',
+    priority: 2,
+    source: 'Endpoint Detection',
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    status: 'open',
+    assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
+  },
+  {
+    id: '4',
+    title: 'Suspicious Network Scanning',
+    description: 'Internal host performing comprehensive network reconnaissance across multiple subnets.',
+    severity: 'high',
+    priority: 2,
+    source: 'Network IDS',
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000 * 60), // 3 hours ago
+    status: 'investigating',
+    iocs: [
+      { id: '4', type: 'ip', value: '10.0.50.25', confidence: 85, tags: ['scanning'], firstSeen: new Date(), lastSeen: new Date() }
+    ]
+  },
+  {
+    id: '5',
+    title: 'Malware Signature Match',
+    description: 'Known malware signature detected in email attachment. The file appears to be a variant of the TrickBot banking trojan.',
+    severity: 'medium',
+    priority: 3,
+    source: 'Email Security Gateway',
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    status: 'resolved',
+    assignee: { id: '3', email: 'senior@company.com', name: 'Jane Senior', role: 'tier2' }
+  },
+  {
+    id: '6',
+    title: 'Multiple Failed Login Attempts',
+    description: 'Brute force attack detected from external IP targeting admin accounts.',
+    severity: 'medium',
+    priority: 3,
+    source: 'Active Directory',
+    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
+    status: 'open',
+    iocs: [
+      { id: '5', type: 'ip', value: '203.0.113.42', confidence: 92, tags: ['bruteforce'], firstSeen: new Date(), lastSeen: new Date() }
+    ]
+  },
+  {
+    id: '7',
+    title: 'Anomalous DNS Queries',
+    description: 'Multiple DNS queries to newly registered domains with suspicious patterns detected.',
+    severity: 'low',
+    priority: 4,
+    source: 'DNS Security',
+    timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 hours ago
+    status: 'open'
+  },
+  {
+    id: '8',
+    title: 'Unusual Process Execution',
+    description: 'PowerShell execution with encoded commands detected on user workstation.',
+    severity: 'low',
+    priority: 4,
+    source: 'Windows Defender ATP',
+    timestamp: new Date(Date.now() - 11 * 60 * 60 * 1000), // 11 hours ago
+    status: 'false-positive',
+    assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
+  }
+];
+
 const Alerts = () => {
+  // State for incidents (to be able to add/refresh/update)
+  const [incidents, setIncidents] = useState<(Alert & { priority: number })[]>(initialIncidents);
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('12'); // hours
+  const [loading, setLoading] = useState(false);
+  const [fadeAnimate, setFadeAnimate] = useState(false);
+  const [addIncidentOpen, setAddIncidentOpen] = useState(false);
 
-  // Enhanced mock incidents data with priority levels 1-4
-  const incidents: (Alert & { priority: number })[] = [
-    {
-      id: '1',
-      title: 'Critical System Breach - Active APT Campaign',
-      description: 'Advanced persistent threat detected with active data exfiltration. Multiple compromised endpoints with C2 communications established.',
-      severity: 'critical',
-      priority: 1,
-      source: 'SIEM Correlation Engine',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-      status: 'open',
-      iocs: [
-        { id: '1', type: 'hash', value: 'a1b2c3d4e5f6789abcdef', confidence: 95, tags: ['malware', 'apt'], firstSeen: new Date(), lastSeen: new Date() },
-        { id: '2', type: 'ip', value: '192.168.100.50', confidence: 87, tags: ['c2'], firstSeen: new Date(), lastSeen: new Date() }
-      ]
-    },
-    {
-      id: '2',
-      title: 'Ransomware Activity Detected',
-      description: 'Suspicious encryption activity and ransom note deployment detected on multiple workstations in Finance department.',
-      severity: 'critical',
-      priority: 1,
-      source: 'Endpoint Protection',
-      timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
-      status: 'investigating',
-      assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' },
-      iocs: [
-        { id: '3', type: 'hash', value: 'f1e2d3c4b5a6789fedcba', confidence: 98, tags: ['ransomware'], firstSeen: new Date(), lastSeen: new Date() }
-      ]
-    },
-    {
-      id: '3',
-      title: 'Privilege Escalation Attempt',
-      description: 'User account attempted to escalate privileges using known vulnerability CVE-2021-1234.',
-      severity: 'high',
-      priority: 2,
-      source: 'Endpoint Detection',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      status: 'open',
-      assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
-    },
-    {
-      id: '4',
-      title: 'Suspicious Network Scanning',
-      description: 'Internal host performing comprehensive network reconnaissance across multiple subnets.',
-      severity: 'high',
-      priority: 2,
-      source: 'Network IDS',
-      timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
-      status: 'investigating',
-      iocs: [
-        { id: '4', type: 'ip', value: '10.0.50.25', confidence: 85, tags: ['scanning'], firstSeen: new Date(), lastSeen: new Date() }
-      ]
-    },
-    {
-      id: '5',
-      title: 'Malware Signature Match',
-      description: 'Known malware signature detected in email attachment. The file appears to be a variant of the TrickBot banking trojan.',
-      severity: 'medium',
-      priority: 3,
-      source: 'Email Security Gateway',
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-      status: 'resolved',
-      assignee: { id: '3', email: 'senior@company.com', name: 'Jane Senior', role: 'tier2' }
-    },
-    {
-      id: '6',
-      title: 'Multiple Failed Login Attempts',
-      description: 'Brute force attack detected from external IP targeting admin accounts.',
-      severity: 'medium',
-      priority: 3,
-      source: 'Active Directory',
-      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
-      status: 'open',
-      iocs: [
-        { id: '5', type: 'ip', value: '203.0.113.42', confidence: 92, tags: ['bruteforce'], firstSeen: new Date(), lastSeen: new Date() }
-      ]
-    },
-    {
-      id: '7',
-      title: 'Anomalous DNS Queries',
-      description: 'Multiple DNS queries to newly registered domains with suspicious patterns detected.',
-      severity: 'low',
-      priority: 4,
-      source: 'DNS Security',
-      timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 hours ago
-      status: 'open'
-    },
-    {
-      id: '8',
-      title: 'Unusual Process Execution',
-      description: 'PowerShell execution with encoded commands detected on user workstation.',
-      severity: 'low',
-      priority: 4,
-      source: 'Windows Defender ATP',
-      timestamp: new Date(Date.now() - 11 * 60 * 60 * 1000), // 11 hours ago
-      status: 'false-positive',
-      assignee: { id: '2', email: 'analyst@company.com', name: 'John Analyst', role: 'tier1' }
-    }
-  ];
-
+  // Filtered incidents as before
   const filteredIncidents = useMemo(() => {
     const now = new Date();
     const timeThreshold = new Date(now.getTime() - parseInt(timeFilter) * 60 * 60 * 1000);
@@ -148,10 +155,8 @@ const Alerts = () => {
       const matchesPriority = priorityFilter === 'all' || incident.priority.toString() === priorityFilter;
       const matchesStatus = statusFilter === 'all' || incident.status === statusFilter;
       const matchesTime = incident.timestamp >= timeThreshold;
-      
       return matchesSearch && matchesPriority && matchesStatus && matchesTime;
     }).sort((a, b) => {
-      // Sort by priority (1 highest, 4 lowest), then by timestamp (newest first)
       if (a.priority !== b.priority) {
         return a.priority - b.priority;
       }
@@ -164,7 +169,6 @@ const Alerts = () => {
     const priority1 = filteredIncidents.filter(i => i.priority === 1).length;
     const priority2 = filteredIncidents.filter(i => i.priority === 2).length;
     const open = filteredIncidents.filter(i => i.status === 'open').length;
-    
     return { total, priority1, priority2, open };
   };
 
@@ -180,19 +184,72 @@ const Alerts = () => {
     }
   };
 
+  // Handler: refresh with loading and fade effect
+  const handleRefresh = () => {
+    setLoading(true);
+    setFadeAnimate(false);
+    setTimeout(() => {
+      setLoading(false);
+      setFadeAnimate(true);
+      setTimeout(() => setFadeAnimate(false), 500); // fade-in duration
+    }, 1100);
+  };
+
+  // Handler: add incident demo - adds the example provided in request
+  const handleAddIncident = () => setAddIncidentOpen(true);
+
+  // Actually adds the incident
+  const handleAddIncidentConfirm = () => {
+    const now = new Date();
+    setIncidents(prev => [
+      {
+        id: `${now.getTime()}`,
+        title: 'Critical System Breach - Active APT Campaign',
+        description: 'Advanced persistent threat detected with active data exfiltration. Multiple compromised endpoints with C2 communications established.',
+        severity: 'critical',
+        priority: 1,
+        source: 'SIEM Correlation Engine',
+        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 min ago
+        status: 'open',
+        iocs: [
+          { id: `1-${now.getTime()}`, type: 'hash', value: 'a1b2c3d4e5f6789abcdef', confidence: 95, tags: ['malware', 'apt'], firstSeen: now, lastSeen: now },
+          { id: `2-${now.getTime()}`, type: 'ip', value: '192.168.100.50', confidence: 87, tags: ['c2'], firstSeen: now, lastSeen: now }
+        ]
+      },
+      ...prev
+    ]);
+    setAddIncidentOpen(false);
+    setFadeAnimate(true);
+    setTimeout(() => setFadeAnimate(false), 500);
+  };
+
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 relative">
+        {/* Overlay loader */}
+        <LoaderOverlay show={loading} />
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-white">Security Incidents</h1>
             <p className="text-gray-400 mt-1">Monitor and investigate security incidents by priority</p>
           </div>
-          <div className="flex space-x-2">
-            <Button className="bg-cyber-red hover:bg-cyber-red-dark text-white">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+          <div className="flex gap-2">
+            <Button
+              className="bg-cyber-red hover:bg-cyber-red-dark text-white"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              {loading ? "Refreshing..." : "Refresh"}
+            </Button>
+            <Button
+              className="bg-cyber-darker border border-cyber-gunmetal text-white hover:bg-cyber-red/90 transition"
+              onClick={handleAddIncident}
+              disabled={loading}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Incident
             </Button>
           </div>
         </div>
@@ -314,7 +371,13 @@ const Alerts = () => {
         </Card>
 
         {/* Incidents List */}
-        <div className="h-[60vh] overflow-y-auto pr-1 space-y-4 custom-scrollbar">
+        <div
+          className={`
+            h-[60vh] overflow-y-auto pr-1 space-y-4 custom-scrollbar
+            transition-opacity duration-500
+            ${fadeAnimate ? "opacity-0" : "opacity-100"}
+          `}
+        >
           {filteredIncidents.length > 0 ? (
             filteredIncidents.map((incident) => (
               <Card key={incident.id} className="bg-cyber-darker border-cyber-gunmetal hover:border-cyber-red transition-all duration-200">
@@ -339,7 +402,6 @@ const Alerts = () => {
                     <div className="flex flex-col items-end text-xs text-gray-400">
                       <span className="flex items-center">
                         <Clock className="h-3 w-3 mr-1" />
-                        {/* Show relative time instead of absolute */}
                         {formatRelativeTime(incident.timestamp)}
                       </span>
                       <span className="mt-1">{incident.source}</span>
@@ -419,6 +481,12 @@ const Alerts = () => {
             </Card>
           )}
         </div>
+        {/* Add Incident Dialog */}
+        <AddIncidentDialog
+          open={addIncidentOpen}
+          onOpenChange={setAddIncidentOpen}
+          onAdd={handleAddIncidentConfirm}
+        />
       </div>
     </Layout>
   );
