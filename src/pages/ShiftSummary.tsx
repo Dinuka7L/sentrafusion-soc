@@ -15,18 +15,20 @@ const ShiftSummaryPage = () => {
 
   return (
     <Layout>
-      {/* Make this container fill available viewport height (minus header/sidebar) */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-8 h-[calc(100vh-48px)]">
-        {/* Demo: Left - fill height, flex */}
+      {/* Container fills viewport height under header/sidebar, prevents extra space */}
+      <div className="flex flex-col md:flex-row gap-4 md:gap-8 h-[calc(100vh-48px)] min-h-0 w-full">
+        {/* Left: Demo */}
         <div className="w-full md:w-[32%] flex flex-col min-h-0 flex-1">
           <TeamFilter selectedTeam={selectedTeam} onSelect={setSelectedTeam} />
-          {/* Make DemoShiftSummaryList fill remaining height using flex-1 and min-h-0 */}
-          <div className="flex-1 min-h-0">
-            <DemoShiftSummaryList selectedTeam={selectedTeam} />
+          <div className="relative flex-1 min-h-0">
+            {/* Take all remaning space */}
+            <ScrollArea className="h-full min-h-0">
+              <DemoShiftSummaryList selectedTeam={selectedTeam} />
+            </ScrollArea>
           </div>
         </div>
 
-        {/* Real data: Right - fill height, flex */}
+        {/* Right: Real data */}
         <div className="w-full md:w-[68%] flex flex-col min-h-0 flex-1">
           <div className="flex items-center justify-end mb-2">
             <Sheet open={open} onOpenChange={setOpen}>
@@ -48,9 +50,8 @@ const ShiftSummaryPage = () => {
               </SheetContent>
             </Sheet>
           </div>
-          {/* Fill available height, allow scrolling */}
-          <div className="flex-1 min-h-0">
-            <ScrollArea className="h-full pr-2">
+          <div className="relative flex-1 min-h-0">
+            <ScrollArea className="h-full min-h-0">
               <ShiftSummaryList />
             </ScrollArea>
           </div>
@@ -61,4 +62,3 @@ const ShiftSummaryPage = () => {
 };
 
 export default ShiftSummaryPage;
-
