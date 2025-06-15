@@ -5,22 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Shield, Settings, LogOut, User } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      toast.success('Logged out successfully');
-      navigate('/auth');
-    } catch (error) {
-      toast.error('Error logging out');
-    }
-  };
+  // Auth removed: show static guest info
+  const fullName = "Guest User";
+  const userRole = "SOC Analyst";
+  const avatarInitials = "GU";
 
   return (
     <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
@@ -47,9 +39,9 @@ const Header = () => {
 
         <div className="flex items-center space-x-4">
           <div className="text-right text-sm">
-            <p className="text-white font-medium">{profile?.full_name || user?.email}</p>
+            <p className="text-white font-medium">{fullName}</p>
             <p className="text-gray-400 text-xs">
-              {profile?.role === 'admin' ? 'Administrator' : 'SOC Analyst'}
+              {userRole}
             </p>
           </div>
           
@@ -59,7 +51,7 @@ const Header = () => {
                 <Avatar className="h-10 w-10">
                   <AvatarImage src="/placeholder.svg" alt="User" />
                   <AvatarFallback className="bg-cyber-gunmetal text-white">
-                    {profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                    {avatarInitials}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -73,9 +65,9 @@ const Header = () => {
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} className="text-cyber-red hover:text-white hover:bg-cyber-red">
+              <DropdownMenuItem disabled className="text-cyber-red opacity-50 cursor-not-allowed">
                 <LogOut className="mr-2 h-4 w-4" />
-                Logout
+                Logout Unavailable
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

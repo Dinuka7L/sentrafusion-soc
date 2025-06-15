@@ -3,21 +3,19 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User, Shield, Mail, Calendar } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
 
 const Profile = () => {
-  const { user, profile } = useAuth();
-
-  if (!user || !profile) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-400">Loading profile...</p>
-        </div>
-      </Layout>
-    );
-  }
+  // Auth removed: show static guest profile
+  const profile = {
+    full_name: "Guest User",
+    username: "guest",
+    role: "soc_analyst",
+    created_at: "2024-01-01T00:00:00Z",
+  };
+  const user = {
+    email: "guest@soc-suite.app"
+  };
 
   return (
     <Layout>
@@ -57,10 +55,10 @@ const Profile = () => {
                   <span>Role</span>
                 </label>
                 <Badge 
-                  variant={profile.role === 'admin' ? 'destructive' : 'secondary'}
-                  className={profile.role === 'admin' ? 'bg-cyber-red text-white' : 'bg-cyber-gunmetal text-gray-300'}
+                  variant="secondary"
+                  className="bg-cyber-gunmetal text-gray-300"
                 >
-                  {profile.role === 'admin' ? 'Administrator' : 'SOC Analyst'}
+                  SOC Analyst
                 </Badge>
               </div>
               
