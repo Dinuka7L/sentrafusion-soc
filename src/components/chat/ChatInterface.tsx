@@ -79,12 +79,25 @@ const ChatInterface = ({ session, onSendMessage, onEscalate, className, isCompos
                 )}
               >
                 <div
+                  // glassy chat bubble
                   className={cn(
-                    "max-w-[80%] rounded-lg p-3",
+                    "max-w-[80%] rounded-lg p-3 border border-cyber-gunmetal shadow-md",
+                    "backdrop-blur-lg bg-white/10 bg-gradient-to-br from-black/60 via-cyber-darker/70 to-cyber-red/30",
                     message.role === 'user'
-                      ? "bg-cyber-red text-white"
-                      : "bg-cyber-gunmetal text-gray-100"
+                      ? "ml-10 text-white border-cyber-red"
+                      : "mr-10 text-gray-100 border-cyber-gunmetal"
                   )}
+                  style={{
+                    background:
+                      message.role === 'user'
+                        ? "linear-gradient(135deg, rgba(30,30,30,0.7) 60%, rgba(198,40,40,0.25) 100%)"
+                        : "linear-gradient(135deg, rgba(18,18,18,0.82) 70%, rgba(198,40,40,0.10) 100%)",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
+                    border: message.role === 'user'
+                      ? "1.5px solid #c62828"
+                      : "1px solid #424242",
+                  }}
                 >
                   <div className="flex items-start space-x-2">
                     {message.role === 'assistant' ? (
