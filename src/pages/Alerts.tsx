@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert } from '@/types';
 import { Search, Filter, RefreshCw, Plus, AlertTriangle, Clock } from 'lucide-react';
 import IOCChip from "@/components/alerts/IOCChip";
-import AddIncidentDialog from "@/components/alerts/AddIncidentDialog";
 import LoaderOverlay from "@/components/ui/loader-overlay";
+import AddIncidentFormDialog from "@/components/alerts/AddIncidentFormDialog";
+import DeleteIncidentDialog from "@/components/alerts/DeleteIncidentDialog";
 
 // Utility: Format how long ago an incident occurred (e.g., "2 hours ago", "5 days ago")
 function formatRelativeTime(date: Date) {
@@ -142,6 +143,11 @@ const Alerts = () => {
   const [loading, setLoading] = useState(false);
   const [fadeAnimate, setFadeAnimate] = useState(false);
   const [addIncidentOpen, setAddIncidentOpen] = useState(false);
+  const [addIncidentFormOpen, setAddIncidentFormOpen] = useState(false);
+
+  // For delete dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [incidentToDelete, setIncidentToDelete] = useState<null | { id: string, title: string }>(null);
 
   // Filtered incidents as before
   const filteredIncidents = useMemo(() => {
@@ -195,32 +201,63 @@ const Alerts = () => {
     }, 1100);
   };
 
-  // Handler: add incident demo - adds the example provided in request
-  const handleAddIncident = () => setAddIncidentOpen(true);
+  // Handler: open new incident dialog
+  const handleAddIncident = () => {
+    setAddIncidentFormOpen(true);
+  };
 
-  // Actually adds the incident
-  const handleAddIncidentConfirm = () => {
+  // Handle "submit incident"
+  const handleAddIncidentConfirm = (data: {
+    title: string;
+    description: string;
+    severity: "critical" | "high" | "medium" | "low" | "info";
+    priority: number;
+    source: string;
+    iocs?: { type: string; value: string }[];
+  }) => {
     const now = new Date();
     setIncidents(prev => [
       {
         id: `${now.getTime()}`,
-        title: 'Critical System Breach - Active APT Campaign',
-        description: 'Advanced persistent threat detected with active data exfiltration. Multiple compromised endpoints with C2 communications established.',
-        severity: 'critical',
-        priority: 1,
-        source: 'SIEM Correlation Engine',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 min ago
+        title: data.title,
+        description: data.description,
+        severity: data.severity,
+        priority: data.priority,
+        source: data.source,
+        timestamp: now,
         status: 'open',
-        iocs: [
-          { id: `1-${now.getTime()}`, type: 'hash', value: 'a1b2c3d4e5f6789abcdef', confidence: 95, tags: ['malware', 'apt'], firstSeen: now, lastSeen: now },
-          { id: `2-${now.getTime()}`, type: 'ip', value: '192.168.100.50', confidence: 87, tags: ['c2'], firstSeen: now, lastSeen: now }
-        ]
+        // You can adjust this if you want analysts to attach more info
+        iocs: data.iocs?.map((ioc, idx) => ({
+          id: `${idx + 1}-${now.getTime()}`,
+          type: ioc.type as any,
+          value: ioc.value,
+          confidence: 90,
+          tags: [],
+          firstSeen: now,
+          lastSeen: now,
+        })),
       },
-      ...prev
+      ...prev,
     ]);
-    setAddIncidentOpen(false);
+    setAddIncidentFormOpen(false);
     setFadeAnimate(true);
     setTimeout(() => setFadeAnimate(false), 500);
+  };
+
+  // Handler: delete
+  const openDeleteDialog = (incident: { id: string; title: string }) => {
+    setIncidentToDelete(incident);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteIncident = () => {
+    if (incidentToDelete) {
+      setIncidents(prev => prev.filter(i => i.id !== incidentToDelete.id));
+      setDeleteDialogOpen(false);
+      setIncidentToDelete(null);
+      setFadeAnimate(true);
+      setTimeout(() => setFadeAnimate(false), 500);
+    }
   };
 
   return (
@@ -456,6 +493,14 @@ const Alerts = () => {
                       <AlertTriangle className="h-4 w-4 mr-2" />
                       Investigate
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-cyber-gunmetal text-gray-300 hover:bg-cyber-gunmetal"
+                      onClick={() => openDeleteDialog({ id: incident.id, title: incident.title })}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -482,10 +527,17 @@ const Alerts = () => {
           )}
         </div>
         {/* Add Incident Dialog */}
-        <AddIncidentDialog
-          open={addIncidentOpen}
-          onOpenChange={setAddIncidentOpen}
+        <AddIncidentFormDialog
+          open={addIncidentFormOpen}
+          onOpenChange={setAddIncidentFormOpen}
           onAdd={handleAddIncidentConfirm}
+        />
+        {/* Delete Incident Dialog */}
+        <DeleteIncidentDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleDeleteIncident}
+          incidentTitle={incidentToDelete?.title || ""}
         />
       </div>
     </Layout>
