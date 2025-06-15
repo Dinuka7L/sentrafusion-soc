@@ -1,13 +1,12 @@
 
-import React, { useRef, useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Layout from "@/components/layout/Layout";
 import { useTheme } from "@/hooks/useTheme";
+// Import the hardcoded logo
+import logoImg from '@/assets/logo.png';
 
-const SETTINGS_LOGO_KEY = "soc-custom-logo";
-const SETTINGS_LOGO_SIZE_KEY = "soc-custom-logo-size";
 const SETTINGS_THEME_KEY = "soc-theme";
 
 const themeOptions = [
@@ -46,23 +45,9 @@ const defaultLogoSize = 48;
 
 const Settings = () => {
   const { theme, setTheme } = useTheme();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState<string>(theme);
   const [pendingTheme, setPendingTheme] = useState(false);
-  const [logoSize, setLogoSize] = useState<number>(defaultLogoSize);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Load logo and size from storage on mount
-  useEffect(() => {
-    const storedLogo = localStorage.getItem(SETTINGS_LOGO_KEY);
-    if (storedLogo) setLogoUrl(storedLogo);
-
-    const storedSize = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
-    if (storedSize) setLogoSize(Number(storedSize));
-  }, []);
-
-  // Theme update logic for global application
   useEffect(() => {
     document.body.classList.remove("theme-red-eagle", "theme-midnight-blue", "theme-purple-hues");
     document.body.classList.add("theme-" + selectedTheme);
@@ -72,36 +57,9 @@ const Settings = () => {
     setPendingTheme(selectedTheme !== theme);
   }, [selectedTheme, theme]);
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const result = event.target?.result as string;
-        setLogoUrl(result);
-        localStorage.setItem(SETTINGS_LOGO_KEY, result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveLogo = () => {
-    setLogoUrl(null);
-    localStorage.removeItem(SETTINGS_LOGO_KEY);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
   const handleThemeSave = () => {
     setTheme(selectedTheme as any);
     localStorage.setItem(SETTINGS_THEME_KEY, selectedTheme);
-  };
-
-  // IMMEDIATE LOGO SIZE CHANGE and sync to localStorage
-  const handleLogoSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSize = Number(e.target.value);
-    setLogoSize(newSize);
-    localStorage.setItem(SETTINGS_LOGO_SIZE_KEY, String(newSize));
-    // This triggers the event listened for in Header, so Header logo updates live.
   };
 
   return (
@@ -113,56 +71,21 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt="Custom Logo"
-                  style={{
-                    width: logoSize,
-                    height: logoSize,
-                    minWidth: minLogoSize,
-                    minHeight: minLogoSize,
-                    maxWidth: maxLogoSize,
-                    maxHeight: maxLogoSize,
-                    objectFit: "contain"
-                  }}
-                  className="object-contain bg-cyber-gunmetal border p-1 rounded"
-                />
-              ) : (
-                <span className="text-gray-400 italic text-sm">No logo uploaded.</span>
-              )}
-              <label className="cursor-pointer">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleLogoChange}
-                  ref={fileInputRef}
-                />
-                <Button onClick={() => fileInputRef.current?.click()} size="sm" type="button">
-                  {logoUrl ? "Change" : "Upload"}
-                </Button>
-              </label>
-              {logoUrl && (
-                <Button variant="outline" size="sm" type="button" onClick={handleRemoveLogo}>
-                  Remove
-                </Button>
-              )}
-            </div>
-            {/* Logo size slider */}
-            <div className="flex items-center gap-2 mt-6">
-              <label htmlFor="logo-size" className="text-xs text-gray-400 w-20">Logo Size</label>
-              <input
-                id="logo-size"
-                type="range"
-                min={minLogoSize}
-                max={maxLogoSize}
-                value={logoSize}
-                onChange={handleLogoSizeChange}
-                className="w-40 accent-cyber-red"
+              <img
+                src={logoImg}
+                alt="Logo"
+                style={{
+                  width: defaultLogoSize,
+                  height: defaultLogoSize,
+                  minWidth: minLogoSize,
+                  minHeight: minLogoSize,
+                  maxWidth: maxLogoSize,
+                  maxHeight: maxLogoSize,
+                  objectFit: "contain"
+                }}
+                className="object-contain bg-cyber-gunmetal border p-1 rounded"
               />
-              <span className="ml-2 font-mono text-gray-300">{logoSize}px</span>
-              {/* Remove Save button, update on input change */}
+              <span className="text-gray-400 text-sm italic">Logo is fixed. To update, replace the logo file in <code className="px-1">src/assets/logo.png</code></span>
             </div>
           </CardContent>
         </Card>

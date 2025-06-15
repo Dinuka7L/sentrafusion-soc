@@ -1,31 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Shield, Settings, LogOut, User } from 'lucide-react';
+// Import the hardcoded logo
+import logoImg from '@/assets/logo.png';
 
-const SETTINGS_LOGO_KEY = "soc-custom-logo";
-const SETTINGS_LOGO_SIZE_KEY = "soc-custom-logo-size";
 const defaultLogoSize = 48;
 const minLogoSize = 32;
 const maxLogoSize = 120;
-
-// Get initial logoUrl and logoSize from localStorage before first render
-function getInitialLogoUrl() {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem(SETTINGS_LOGO_KEY);
-  }
-  return null;
-}
-function getInitialLogoSize() {
-  if (typeof window !== "undefined") {
-    const sizeStr = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
-    return sizeStr ? Number(sizeStr) : defaultLogoSize;
-  }
-  return defaultLogoSize;
-}
 
 const Header = () => {
   const navigate = useNavigate();
@@ -34,37 +19,17 @@ const Header = () => {
   const userRole = "SOC Analyst";
   const avatarInitials = "GU";
 
-  // Optimistically initialize state from localStorage to prevent glitch
-  const [logoUrl, setLogoUrl] = useState<string | null>(() => getInitialLogoUrl());
-  const [logoSize, setLogoSize] = useState<number>(() => getInitialLogoSize());
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Update in case changed elsewhere after mount
-      setLogoUrl(localStorage.getItem(SETTINGS_LOGO_KEY));
-      const sizeStr = localStorage.getItem(SETTINGS_LOGO_SIZE_KEY);
-      setLogoSize(sizeStr ? Number(sizeStr) : defaultLogoSize);
-
-      const handleStorage = (e: StorageEvent) => {
-        if (e.key === SETTINGS_LOGO_KEY) setLogoUrl(e.newValue);
-        if (e.key === SETTINGS_LOGO_SIZE_KEY) setLogoSize(e.newValue ? Number(e.newValue) : defaultLogoSize);
-      };
-      window.addEventListener("storage", handleStorage);
-      return () => window.removeEventListener("storage", handleStorage);
-    }
-  }, []);
-
   return (
     <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-          {logoUrl ? (
+          {logoImg ? (
             <img
-              src={logoUrl}
-              alt="Custom Logo"
+              src={logoImg}
+              alt="Logo"
               style={{
-                width: logoSize,
-                height: logoSize,
+                width: defaultLogoSize,
+                height: defaultLogoSize,
                 minWidth: minLogoSize,
                 minHeight: minLogoSize,
                 maxWidth: maxLogoSize,
