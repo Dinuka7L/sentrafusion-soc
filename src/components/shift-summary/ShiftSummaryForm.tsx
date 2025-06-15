@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -17,16 +17,36 @@ const initialState = {
 const ShiftSummaryForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [form, setForm] = useState(initialState);
   const [uploading, setUploading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  // Get current user id from Supabase Auth
+  useEffect(() => {
+    let mounted = true;
+    async function fetchUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (mounted) setUserId(user?.id ?? null);
+    }
+    fetchUser();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const mutation = useMutation({
     mutationFn: async () => {
+      if (!userId) {
+        throw new Error('You must be logged in to create a shift summary.');
+      }
       const { error } = await supabase.from('shift_summaries').insert([{
         shift_date: form.shift_date,
         shift_lead_name: form.shift_lead_name,
         team_notes: form.team_notes,
         file_attachment_path: form.file_attachment_path,
-        // Add user id for created_by if available
+        created_by: userId,
+        // Add user id for created_by (required for RLS)
       }]);
       if (error) throw error;
     },
@@ -93,13 +113,18 @@ const ShiftSummaryForm = ({ onSuccess }: { onSuccess: () => void }) => {
       <Button
         type="submit"
         className="w-full"
-        disabled={mutation.isPending || uploading}
+        disabled={mutation.isPending || uploading || !userId}
       >
         {mutation.isPending ? 'Saving...' : 'Save'}
       </Button>
       {mutation.error && (
         <div className="text-sm text-destructive mt-2">
           Error: {(mutation.error as Error).message}
+        </div>
+      )}
+      {!userId && (
+        <div className="text-sm text-destructive mt-2">
+          You must be logged in to create a shift summary.
         </div>
       )}
     </form>
