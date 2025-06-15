@@ -37,8 +37,7 @@ const AlertCard = ({ alert, onInvestigate, onAssign }: AlertCardProps) => {
 
   return (
     <Card className={cn(
-      "bg-cyber-darker border-cyber-gunmetal hover:border-cyber-red transition-all duration-200",
-      alert.severity === 'critical' && "animate-pulse-glow"
+      "bg-cyber-darker border-cyber-gunmetal hover:border-cyber-red transition-all duration-200"
     )}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
