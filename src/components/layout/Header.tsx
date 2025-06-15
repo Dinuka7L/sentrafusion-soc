@@ -18,7 +18,8 @@ const Header = () => {
   const avatarInitials = "GU";
 
   return (
-    <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60">
+    <header className="globe-bg border-b border-cyber-gunmetal bg-cyber-darker/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-darker/60
+      fixed top-0 left-0 w-full z-50 shadow-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
           {sFlogo ? (
