@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,15 +53,23 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
+				// SOC Suite Custom Colors
+				cyber: {
+					dark: '#1e1e1e',
+					darker: '#121212',
+					red: '#c62828',
+					'red-dark': '#b71c1c',
+					'red-light': '#d32f2f',
+					gunmetal: '#424242',
+					'gunmetal-light': '#616161',
+					'gunmetal-dark': '#303030',
+				},
+				alert: {
+					critical: '#ff1744',
+					high: '#ff5722',
+					medium: '#ff9800',
+					low: '#4caf50',
+					info: '#2196f3',
 				}
 			},
 			borderRadius: {
@@ -84,11 +93,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-glow': {
+					'0%, 100%': { boxShadow: '0 0 5px #c62828' },
+					'50%': { boxShadow: '0 0 20px #c62828, 0 0 30px #c62828' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},
