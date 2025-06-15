@@ -204,10 +204,6 @@ const Chat = () => {
 
   const [isComposing, setIsComposing] = useState(false);
 
-  // For scrollable sidebar - only show 5 at a time
-  const visibleSessions = sessions.slice(0, 5);
-  const moreSessions = sessions.length > 5;
-
   const handleSendMessage = (content: string) => {
     // Add user message immediately
     const newMsg: ChatMessage = {
@@ -267,8 +263,9 @@ const Chat = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
+              {/* One scrollable area for all sessions */}
               <div className="max-h-80 overflow-y-auto flex flex-col gap-2">
-                {visibleSessions.map((session) => (
+                {sessions.map((session) => (
                   <div
                     key={session.id}
                     onClick={() => setActiveChatId(session.id)}
@@ -291,33 +288,6 @@ const Chat = () => {
                     )}
                   </div>
                 ))}
-                {moreSessions && (
-                  <div className="flex-1 min-h-[40px] overflow-y-auto">
-                    {sessions.slice(5).map((session) => (
-                      <div
-                        key={session.id}
-                        onClick={() => setActiveChatId(session.id)}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors mt-2 ${
-                          session.id === activeChatId
-                            ? 'bg-cyber-red text-white'
-                            : 'bg-cyber-gunmetal/50 text-gray-300 hover:bg-cyber-gunmetal'
-                        }`}
-                      >
-                        <div className="font-medium truncate">{session.title}</div>
-                        <div className="text-xs flex items-center mt-1 opacity-75">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {session.updatedAt.toLocaleTimeString()}
-                        </div>
-                        {(session.title.includes('Emergency') || session.title.includes('Incident')) && (
-                          <Badge variant="outline" className="mt-2 text-xs border-cyber-red text-cyber-red">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Escalation
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
