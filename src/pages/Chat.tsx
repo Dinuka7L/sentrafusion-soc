@@ -8,77 +8,212 @@ import { Badge } from '@/components/ui/badge';
 import { ChatSession, ChatMessage } from '@/types';
 import { MessageSquare, Plus, Clock, AlertTriangle, FileText } from 'lucide-react';
 
+// --- Define example conversations ---
+const now = new Date();
+const demoSessions: ChatSession[] = [
+  {
+    id: 'conv1',
+    title: 'Investigating an Alert',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "Hey AI, I just got a SIEM alert for a suspicious PowerShell script detected on host WIN-1234. Can you summarize possible MITRE ATT&CK techniques related to this behavior?",
+        role: "user",
+        timestamp: new Date(now.getTime() - 800000),
+      },
+      {
+        id: '2',
+        content:
+          "Sure. Suspicious PowerShell activity commonly relates to:\n\nT1059.001 (PowerShell) — Execution of PowerShell commands for defense evasion or execution.\n\nT1086 (PowerShell - Deprecated) — Legacy technique still referenced in some alerts.\n\nT1027 (Obfuscated Files or Information) — Scripts may be obfuscated to bypass detection.\nWould you like to see recent incidents in your environment involving these techniques?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 790000),
+      },
+      {
+        id: '3',
+        content: "Yes, show me incidents in the last 7 days with this behavior.",
+        role: "user",
+        timestamp: new Date(now.getTime() - 780000),
+      },
+      {
+        id: '4',
+        content:
+          "3 incidents match:\n\nTicket #457: Lateral movement attempt via PSExec.\n\nTicket #462: Suspicious Base64-encoded PowerShell payload.\n\nTicket #468: Possible C2 beacon via PowerShell Empire framework.\nWould you like to review any of these in detail or escalate this current alert?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 770000),
+      }
+    ],
+  },
+  {
+    id: 'conv2',
+    title: 'IOC Enrichment',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "Can you check if the IP 198.51.100.23 is known in any threat intel feeds we have access to?",
+        role: "user",
+        timestamp: new Date(now.getTime() - 700000),
+      },
+      {
+        id: '2',
+        content:
+          "198.51.100.23 is listed in the following sources:\n\nAlienVault OTX: Malicious C2 server flagged last week.\n\nVirusTotal: 15 detections out of 70 engines, marked as C2 beacon.\n\nInternal Case: Linked to Ticket #452 from 3 days ago (Ransomware pre-encryption activity).\nWould you like to open a ticket or block this IP on perimeter firewalls?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 690000),
+      }
+    ],
+  },
+  {
+    id: 'conv3',
+    title: 'Ticket Mgmt Guidance',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "I want to escalate Ticket #472 to critical — what criteria should be documented according to our playbook?",
+        role: "user",
+        timestamp: new Date(now.getTime() - 600000),
+      },
+      {
+        id: '2',
+        content:
+          "According to the SOC escalation playbook v4.3, escalation to critical requires:\n\nConfirmed data exfiltration or lateral movement.\n\nActive attacker presence in the environment.\n\nImpact on critical business systems.\n\nIncident Commander notification.\nYou have documented #2 and #3. Would you like me to pre-fill an escalation form for you?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 590000),
+      }
+    ],
+  },
+  {
+    id: 'conv4',
+    title: 'Pre-Shift Brief Request',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "Summarize for me the critical open incidents I need to prioritize in this shift.",
+        role: "user",
+        timestamp: new Date(now.getTime() - 500000),
+      },
+      {
+        id: '2',
+        content:
+          "As of the last 12 hours:\n\nTicket #485: Ransomware pre-encryption indicators detected on HR File Server.\n\nTicket #479: Suspicious credential dump attempt blocked on Domain Controller DC-01.\n\nTicket #490: Open investigation into possible phishing campaign — 5 users reported suspicious emails.\nSuggested Priority: Investigate Ticket #485 immediately due to potential encryption risk.\nWould you like the full shift summary emailed or exported as PDF?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 490000),
+      }
+    ],
+  },
+  {
+    id: 'conv5',
+    title: 'Playbook Retrieval',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "How do I handle lateral movement alerts according to our latest procedures?",
+        role: "user",
+        timestamp: new Date(now.getTime() - 400000),
+      },
+      {
+        id: '2',
+        content:
+          "Per Playbook ‘Lateral Movement Detection v3.2’:\n\nIsolate affected host from network.\n\nCollect volatile memory (use Velociraptor script X).\n\nExtract user login events and SMB traffic logs for the last 24 hours.\n\nAnalyze for Pass-the-Hash or Remote Service Creation attempts.\nI can provide direct links to the scripts and logging queries — want them now?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 390000),
+      }
+    ],
+  },
+  {
+    id: 'conv6',
+    title: 'IOC Summary for Reporting',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "List all newly detected IoCs from this week.",
+        role: "user",
+        timestamp: new Date(now.getTime() - 300000),
+      },
+      {
+        id: '2',
+        content:
+          "This week’s newly observed IoCs:\n\nIPs: 198.51.100.23, 203.0.113.45\n\nDomains: badguydomain.net, update-server.xyz\n\nFile Hashes (SHA256): 8f5e…78b9.exe (marked as AgentTesla), c3d2…e4f1.dll (unknown RAT)\nDo you want to generate an IOC report in CSV or PDF format?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 290000),
+      }
+    ],
+  },
+  {
+    id: 'conv7',
+    title: 'Emergency SOP Chat',
+    workspaceId: 'ws-demo',
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        id: '1',
+        content: "An alert says ‘Multiple Failed RDP Logins’ from 5 different countries — what should I do first?",
+        role: "user",
+        timestamp: new Date(now.getTime() - 200000),
+      },
+      {
+        id: '2',
+        content:
+          "Suggested Immediate Actions (per SOP RDP Brute v2.1):\n\nTemporarily block external RDP on firewall.\n\nForce password reset for affected accounts.\n\nReview login logs for signs of successful unauthorized access.\n\nAlert Incident Commander if unauthorized access confirmed.\nShall I create a ticket and populate the checklist for you?",
+        role: "assistant",
+        timestamp: new Date(now.getTime() - 190000),
+      }
+    ],
+  },
+];
+
 const Chat = () => {
-  const [activeChatId, setActiveChatId] = useState('1');
+  // Clone the sessions statefully so each can have independent dynamic messages
+  const [sessions, setSessions] = useState<ChatSession[]>(
+    demoSessions.map((session) => ({ ...session }))
+  );
+  const [activeChatId, setActiveChatId] = useState(sessions[0].id);
 
-  // Mock data
-  const chatSessions: ChatSession[] = [
-    {
-      id: '1',
-      title: 'PowerShell Investigation',
-      workspaceId: 'ws1',
-      incidentId: 'inc1',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      messages: [
-        {
-          id: '1',
-          content: 'I need help analyzing this suspicious PowerShell command that was detected on endpoint DESKTOP-ABC123',
-          role: 'user',
-          timestamp: new Date(Date.now() - 600000),
-        },
-        {
-          id: '2',
-          content: 'I can help you analyze the PowerShell activity. Based on the alert context, this appears to be an encoded PowerShell command. Let me break down what we know:\n\n1. **Encoded Command**: The PowerShell uses base64 encoding, which is common in malicious scripts\n2. **Execution Context**: Ran from a user account with elevated privileges\n3. **Network Activity**: Made outbound connections to suspicious IPs\n\nI recommend:\n- Isolating the affected endpoint\n- Running a full memory dump\n- Checking for persistence mechanisms\n\nWould you like me to generate specific IOCs to hunt for across your environment?',
-          role: 'assistant',
-          timestamp: new Date(Date.now() - 580000),
-          context: ['windows-security-logs', 'powershell-analysis-playbook'],
-          citations: [
-            { id: 'doc1', name: 'PowerShell Analysis Playbook.pdf', type: 'pdf', size: 1024, uploadedAt: new Date(), uploadedBy: { id: '1', email: 'admin@company.com', name: 'Admin', role: 'admin' }, indexed: true, workspaceId: 'ws1' }
-          ]
-        },
-        {
-          id: '3',
-          content: 'Yes, please generate IOCs and also suggest containment actions',
-          role: 'user',
-          timestamp: new Date(Date.now() - 300000),
-        },
-        {
-          id: '4',
-          content: 'Here are the IOCs I\'ve generated based on the analysis:\n\n**File Hashes:**\n- SHA256: a1b2c3d4e5f6789...\n- MD5: 9f8e7d6c5b4a3...\n\n**Network IOCs:**\n- IP: 192.168.100.50 (C2 Server)\n- Domain: malicious-domain.com\n- URL: hxxp://evil-site[.]com/payload\n\n**Registry Keys:**\n- HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\MalwareKey\n\n**Containment Actions:**\n1. Immediately isolate DESKTOP-ABC123 from network\n2. Preserve memory dump and disk image\n3. Check all systems for the above IOCs\n4. Reset credentials for affected user account\n5. Update firewall rules to block C2 domains\n\nShall I create an incident ticket and escalate to Tier-2?',
-          role: 'assistant',
-          timestamp: new Date(Date.now() - 120000),
-          context: ['ioc-database', 'containment-procedures'],
-        }
-      ]
-    },
-    {
-      id: '2',
-      title: 'Network Anomaly Analysis',
-      workspaceId: 'ws1',
-      createdAt: new Date(Date.now() - 3600000),
-      updatedAt: new Date(Date.now() - 3600000),
-      messages: [
-        {
-          id: '1',
-          content: 'I\'m seeing unusual traffic patterns in network segment 10.0.1.0/24. Can you help me understand what might be happening?',
-          role: 'user',
-          timestamp: new Date(Date.now() - 3600000),
-        }
-      ]
-    }
-  ];
-
-  const activeChat = chatSessions.find(chat => chat.id === activeChatId) || chatSessions[0];
+  // Find current active session
+  const activeChatIdx = sessions.findIndex((chat) => chat.id === activeChatId);
+  const activeChat = sessions[activeChatIdx];
 
   const handleSendMessage = (content: string) => {
-    console.log('Sending message:', content);
-    // In a real app, this would send to the backend and update the chat
+    // Add a dummy user message
+    const newMsg: ChatMessage = {
+      id: `${activeChat.messages.length + 1}`,
+      content,
+      role: 'user',
+      timestamp: new Date(),
+    };
+    const updatedChat: ChatSession = {
+      ...activeChat,
+      messages: [...activeChat.messages, newMsg],
+      updatedAt: new Date(),
+    };
+    // Replace in sessions
+    setSessions((prev) =>
+      prev.map((chat, i) => (i === activeChatIdx ? updatedChat : chat))
+    );
+    // No auto-reply: only showcase dummy user message sending
   };
 
   const handleEscalate = () => {
-    console.log('Escalating incident...');
-    // Open escalation wizard
+    // Demo escalation button; optional
+    alert('Escalate action would be triggered here (demo only).');
   };
 
   return (
@@ -91,15 +226,12 @@ const Chat = () => {
               <CardTitle className="text-white flex items-center justify-between">
                 <span className="flex items-center">
                   <MessageSquare className="h-5 w-5 mr-2 text-cyber-red" />
-                  Chat Sessions
+                  Ask AI Sessions
                 </span>
-                <Button size="sm" className="bg-cyber-red hover:bg-cyber-red-dark text-white">
-                  <Plus className="h-4 w-4" />
-                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {chatSessions.map((session) => (
+              {sessions.map((session) => (
                 <div
                   key={session.id}
                   onClick={() => setActiveChatId(session.id)}
@@ -114,10 +246,11 @@ const Chat = () => {
                     <Clock className="h-3 w-3 mr-1" />
                     {session.updatedAt.toLocaleTimeString()}
                   </div>
-                  {session.incidentId && (
-                    <Badge variant="outline" className="mt-2 text-xs">
+                  {/* Optionally, escalate for some sessions */}
+                  {(session.title.includes('Emergency') || session.title.includes('Incident')) && (
+                    <Badge variant="outline" className="mt-2 text-xs border-cyber-red text-cyber-red">
                       <AlertTriangle className="h-3 w-3 mr-1" />
-                      Incident
+                      Escalation
                     </Badge>
                   )}
                 </div>
@@ -136,20 +269,20 @@ const Chat = () => {
             <CardContent className="space-y-2">
               <div className="text-sm space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Active Alerts</span>
-                  <Badge className="bg-cyber-red text-white">3</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">Indexed Documents</span>
-                  <Badge className="bg-green-500 text-white">247</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-300">IOC Database</span>
-                  <Badge className="bg-blue-500 text-white">12.3k</Badge>
+                  <span className="text-gray-300">Demo: RAG Knowledge</span>
+                  <Badge className="bg-cyber-red text-white">Enabled</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300">Threat Intel Feeds</span>
-                  <Badge className="bg-purple-500 text-white">Live</Badge>
+                  <Badge className="bg-green-500 text-white">Live</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">MITRE ATT&CK</span>
+                  <Badge className="bg-blue-500 text-white">v13.1</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300">SOC Playbooks</span>
+                  <Badge className="bg-purple-500 text-white">Current</Badge>
                 </div>
               </div>
             </CardContent>
